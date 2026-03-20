@@ -71,7 +71,7 @@ public class CSVDirectImportPostgresqlService {
 		} catch (Exception e) {
 			connectionObj = null;
 		}
-		Logger.info("-------------------DB COnnection : {}", connectionObj);
+		Logger.warn("-------------------DB COnnection : {}", connectionObj);
 		return connectionObj;
 	}
 	

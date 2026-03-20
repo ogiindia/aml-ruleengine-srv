@@ -85,6 +85,9 @@ public class ProcessEventsService {
 	
 	@Autowired
 	AlertImpl alertImpl;
+	
+	@Autowired
+	ReportTableUpsertService reportTableUpsertService;
 
 	@Value("${aml.without.api.testing:false}")
 	private boolean withOutAPITesting;
@@ -207,9 +210,7 @@ public class ProcessEventsService {
 								} else {
 									trnsScrflg = false;
 								}
-							} else {
-								trnsScrflg = true;
-							}
+							} else { trnsScrflg = true; }
 							if(trnsScrflg) {
 								LOGGER.info("Thread Id : [{}] - Alret Not Available [{}], Newly Calculate Cust and Trans Score.", threadId, alreINtDtoObj);
 								CustmerGenuinessDetailsRecord custRiskRcd = getCusomerGenuinessScore(transactionEntity.getCustomerId().toString(), threadId);
@@ -254,19 +255,22 @@ public class ProcessEventsService {
 							alert.setAlertDT(new Timestamp(new Date().getTime()));
 							alert.setModifiedDt(new Timestamp(new Date().getTime()));
 							alertsRepo.save(alert);
+							
+							reportTableUpsertService.toUpdateInsertReportTbl(transactionEntity, ruleEntity.getAlertCategory());
+							
 							alert = null;
 							LOGGER.info("Thread Id : [{}] - Alert Inserted SUccessfully...........", threadId);
 							Thread.sleep(10000);
 							toUpdateFinsecData(transactionEntity.getTransactionId(), ruleEntity.getAlertCategory(), threadId);
 						} else {
-							LOGGER.info("Thread Id : [{}] - MVEL Expression Match Status [ELSE] BLock : [{}]", threadId,match);
+							LOGGER.warn("Thread Id : [{}] - MVEL Expression Match Status [ELSE] BLock : [{}]", threadId,match);
 						}
 					} else {
-						LOGGER.info("Thread Id : [{}] - MVEL Expression Not found and Null.", threadId);
+						LOGGER.warn("Thread Id : [{}] - MVEL Expression Not found and Null.", threadId);
 					}
 				}
 			} else {
-				LOGGER.info("Thread Id : [{}] - Response from AML Service [ELSE]: [{}]", threadId, ruleRespDtlVOObj);
+				LOGGER.warn("Thread Id : [{}] - Response from AML Service [ELSE]: [{}]", threadId, ruleRespDtlVOObj);
 			}
 		} catch (Exception e) {
 			LOGGER.error("Thread Id : [{}] - Exception found in {}@{} : {}", threadId, clazzName, methodName, e);

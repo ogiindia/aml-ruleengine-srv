@@ -168,8 +168,7 @@ public class FileWatcher {
 								}
 								Logger.info("File format {} block End.", AMLConstants.CSV_FORMAT);
 							}
-							
-							
+					
 							completedFileCountSts = packageWatcherToChkFileCntReached();
 							Logger.info("completedFileCountSts - [{}]",completedFileCountSts);
 							if (completedFileCountSts) {
