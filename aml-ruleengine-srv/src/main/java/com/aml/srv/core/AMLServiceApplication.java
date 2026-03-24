@@ -16,9 +16,9 @@ import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties
  *
  */
 @EnableEncryptableProperties
-@EntityScan({ "com.aml.srv" })
-@ComponentScan({ "com.aml.srv" })
-@EnableJpaRepositories({ "com.aml.srv" })
+@EntityScan({ "com.aml" })
+@ComponentScan({ "com.aml" })
+@EnableJpaRepositories({ "com.aml" })
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration

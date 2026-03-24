@@ -60,8 +60,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			computedFactsVOObj.setFact(factName);
 			if (condition != null) {
 				if (condition.equals("NEW_ACCOUNT")) {
-					AccountDetailsEntity acctDetails = accountDetailsService
-							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
+					AccountDetailsEntity acctDetails = accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
 					if (acctDetails != null && acctDetails.getAccountOpenedDate() != null) {
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 						LocalDate openDate = LocalDate.parse(acctDetails.getAccountOpenedDate(), formatter);

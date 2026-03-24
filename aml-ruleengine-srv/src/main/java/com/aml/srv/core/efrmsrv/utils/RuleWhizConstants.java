@@ -28,7 +28,7 @@ public class RuleWhizConstants {
 	public static final String CBWTR="CBWTR";
 	public static final String CFTR="CFTR";
 	public static final String OTHER="OTHER";
-	
+	public static final String NGO="NGO";
 	public static final String KAFKA_PUB_TOPIC_SANCTIONLIST = "TRASN-PUB-SANCTION-LIST";
 	public static final String KAFKA_PUB_TOPIC_SANCTIONLIST_ID = "TRASN-PUB-SANCTION-LIST-ID";
 	public static final String KAFKA_PUB_TOPIC_SANCTIONLIST_GRP = "TRASN-PUB-SANCTION-LIST-GRPID";

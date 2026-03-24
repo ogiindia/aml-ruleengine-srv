@@ -26,4 +26,25 @@ public class RedisService {
 
 		}
 	}
+	
+	public Object getValue(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void setValue(String key, Object value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+    
+    public String toPushListIntoRedis(String keyName, Object objParam) {
+		try {
+
+			redisTemplate.opsForValue().set(keyName, objParam);
+
+		} catch (Exception e) {
+			Logger.error("Exception found in RedisService@toPushListIntoRedis : {}", e);
+		} finally {
+
+		}
+		return "SUCCESS";
+	}
 }

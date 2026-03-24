@@ -256,7 +256,7 @@ public class ProcessEventsService {
 							alert.setModifiedDt(new Timestamp(new Date().getTime()));
 							alertsRepo.save(alert);
 							
-							reportTableUpsertService.toUpdateInsertReportTbl(transactionEntity, ruleEntity.getAlertCategory());
+							reportTableUpsertService.toUpdateInsertReportTbl(transactionEntity, ruleEntity.getAlertCategory(), ruleEntity.getRuleName());
 							
 							alert = null;
 							LOGGER.info("Thread Id : [{}] - Alert Inserted SUccessfully...........", threadId);
