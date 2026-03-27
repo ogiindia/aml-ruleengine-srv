@@ -1,4 +1,4 @@
-package com.aml.srv.core.efrmsrv.rule.fact.service;
+package com.aml.srv.core.efrmsrv.rule.intr;
 
 import java.util.List;
 

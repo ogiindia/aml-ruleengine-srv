@@ -6,20 +6,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 
-
 @Service("ACTUAL_GOODS_VALUEService")
-public class ActualGoodValueFact implements FactInterface{
-
+public class ActualGoodValueFact implements FactInterface {
 
 	private Logger LOGGER = LoggerFactory.getLogger(ActualGoodValueFact.class);
-	
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::RulesExecutorService@ruleOfFDConversion (FD_CONVERSION) Called::::::::::",
 				requVoObjParam.getReqId());

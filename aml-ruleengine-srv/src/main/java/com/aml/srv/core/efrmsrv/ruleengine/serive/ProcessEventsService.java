@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aml.srv.core.efrm.cust.scoring.CustmerGenuinessDetailsRecord;
 import com.aml.srv.core.efrm.cust.scoring.GenuinenessService;
+import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
 import com.aml.srv.core.efrm.trans.scoring.FraudScorer;
 import com.aml.srv.core.efrm.trans.scoring.TransactionGenuinessDetailsRecord;
 import com.aml.srv.core.efrm.trans.scoring.UltraFraudUtils;
@@ -44,6 +45,7 @@ import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 import com.aml.srv.core.efrmsrv.ruleengine.AMLRule;
 import com.aml.srv.core.efrmsrv.ruleengine.Func;
 import com.aml.srv.core.efrmsrv.ruleengine.RulewhizConfig;
+import com.aml.srv.core.efrmsrv.ruleengine.Schema;
 import com.aml.srv.core.efrmsrv.utils.CommonUtils;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 import com.efrm.rt.srv.core.recordDTO.AlretIntDTO;
@@ -104,7 +106,10 @@ public class ProcessEventsService {
 	 * @param ruleEntity
 	 */
 	@Async("RuleEngineExecutor")
-	public void processEvent(TransactionDetailsEntity transactionEntity, String groupId, NormalizedTblEntity ruleEntity) {
+	//public void processEvent(TransactionDetailsEntity transactionEntity, String groupId, NormalizedTblEntity ruleEntity) {
+	public void processEvent(TransactionParquteMppaing transactionEntity, String groupId,
+			NormalizedTblEntity ruleEntity) {
+	
 		Long threadId = null;
 		Long startTime = new Date().getTime();
 		threadId = Thread.currentThread().getId();
@@ -117,16 +122,16 @@ public class ProcessEventsService {
 		AMLRule ruleDetails = null;
 		List<Func> funcList = null;
 		List<Factset> factSetList = null;
+		List<Schema> schemaList = null;
 		String responseJson = null;
 		ConcurrentHashMap<String, Object> mvelConcurntMap = null;
 		try {
 			String threadName = Thread.currentThread().getName();
 			LOGGER.info("Running in thread : {}  (ID: {})", threadName, threadId);
 			methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
-
 			LOGGER.info("Thread Id : [{}] - transactionEntity Time : [{}] - RuleId : [{}]- Account No.: [{}]", threadId,
 					commonUtils.getCurrentDateTimeMSec(startTime), ruleEntity.getId(),
-					transactionEntity.getAccountNo());
+					transactionEntity.getAccountno());
 			// LOGGER.info("Request Details : [{}] ", new Gson().toJson(ruleEntity,
 			// NormalizedRuleEntity.class));
 			// bean = new AMLAPIBean();
@@ -140,6 +145,7 @@ public class ProcessEventsService {
 			}
 			funcList = ruleDetails.getFunc();
 			factSetList = new ArrayList<Factset>();
+			schemaList = ruleDetails.getSchema();
 
 			mvelConcurntMap = commonUtils.toConvertJson2Map(ruleDetails, threadId);
 			LOGGER.info("Thread Id : [{}] - mvelConcurntMap Details : [{}]", threadId, mvelConcurntMap);
@@ -149,14 +155,15 @@ public class ProcessEventsService {
 				Factset factSetObj = getFactSet(func, ruleEntity, threadId);
 				factSetList.add(factSetObj);
 			}
-			bean.setAccountNo(String.valueOf(transactionEntity.getAccountNo()));
+			bean.setAccountNo(String.valueOf(transactionEntity.getAccountno()));
 			bean.setReqId(UUID.randomUUID().toString());
-			bean.setCustomerId(String.valueOf(transactionEntity.getCustomerId()));
+			bean.setCustomerId(String.valueOf(transactionEntity.getCustomerid()));
 			bean.setRuleId(String.valueOf(ruleEntity.getRuleName()));
-			bean.setTxn_time(transactionEntity.getTransactionTime());
-			bean.setTxnType(transactionEntity.getTransactionType());
+			bean.setTxn_time(transactionEntity.getTransactiondate());
+			bean.setTxnType(transactionEntity.getTransactiontype());
 			bean.setTransactionMode(ruleEntity.getTransactionMode());
 			bean.setFactSet(factSetList);
+			bean.setSchema(schemaList);
 			// String jsonReq = new Gson().toJson(bean);
 			// LOGGER.info("Thread Id : [{}] - API Request [{}] - URL : [{}] - Row ID : [{}]
 			// - RULE NAME : [{}]",threadId, jsonReq, apiUrl, ruleEntity.getId(),
@@ -197,7 +204,7 @@ public class ProcessEventsService {
 							String riskType = null;
 							Double riskScoreTrans = Double.valueOf(0);
 							String riskTypeTrans = null;
-							AlretIntDTO alreINtDtoObj = alertImpl.getAlretTrans(transactionEntity.getCustomerId().toString() + transactionEntity.getTransactionId());
+							AlretIntDTO alreINtDtoObj = alertImpl.getAlretTrans(transactionEntity.getCustomerid().toString() + transactionEntity.getTransactionid());
 							LOGGER.info("Thread Id : [{}] - Alret Available [{}]", threadId, alreINtDtoObj);
 							boolean trnsScrflg = false;
 							if (alreINtDtoObj != null) {
@@ -213,7 +220,7 @@ public class ProcessEventsService {
 							} else { trnsScrflg = true; }
 							if(trnsScrflg) {
 								LOGGER.info("Thread Id : [{}] - Alret Not Available [{}], Newly Calculate Cust and Trans Score.", threadId, alreINtDtoObj);
-								CustmerGenuinessDetailsRecord custRiskRcd = getCusomerGenuinessScore(transactionEntity.getCustomerId().toString(), threadId);
+								CustmerGenuinessDetailsRecord custRiskRcd = getCusomerGenuinessScore(transactionEntity.getCustomerid().toString(), threadId);
 								if(custRiskRcd!=null) {
 									riskScore = UltraFraudUtils.toDoubleTwoDecimals(custRiskRcd.riskScore());
 									riskType = custRiskRcd.risk();
@@ -221,7 +228,7 @@ public class ProcessEventsService {
 								//Get Transaction SCore
 								Long startDate = new Date().getTime();
 								LOGGER.info("Thread Id : [{}] - Transaction Score Fetch Called.",threadId );
-								float[] feture = fraudScorer.getMapperDtlForTrans(transactionEntity.getTransactionId());
+								float[] feture = fraudScorer.getMapperDtlForTrans(transactionEntity.getTransactionid());
 								TransactionGenuinessDetailsRecord trandScoreRcdObj = fraudScorer.toGetTransFraudScorer(feture);
 								if (trandScoreRcdObj != null) {
 									riskScoreTrans = UltraFraudUtils.toDoubleTwoDecimals(trandScoreRcdObj.score());
@@ -242,16 +249,16 @@ public class ProcessEventsService {
 							alert.setCustRiskType(riskType);
 							alert.setTranRiskScore(riskScoreTrans);
 							alert.setTranRiskType(riskTypeTrans);
-							alert.setAccNo(transactionEntity.getAccountNo().toString());
+							alert.setAccNo(transactionEntity.getAccountno().toString());
 							alert.setAlertDesc(ruleEntity.getRuleDescription());
 							alert.setAlertId(commonUtils.getUniqueId());
 							alert.setAlertName(ruleEntity.getRuleName());
-							alert.setAlertParentId(transactionEntity.getCustomerId().toString() + transactionEntity.getTransactionId());
+							alert.setAlertParentId(transactionEntity.getCustomerid().toString() + transactionEntity.getTransactionid());
 							alert.setAlertStatus(RuleWhizConstants.ALERT_STATUS_PENDING);
-							alert.setCustId(transactionEntity.getCustomerId().toString());
+							alert.setCustId(transactionEntity.getCustomerid().toString());
 							alert.setRiskCategory(ruleEntity.getAlertCategory());
 							alert.setRuleId(ruleEntity.getId());
-							alert.setTransactionId(transactionEntity.getTransactionId());
+							alert.setTransactionId(transactionEntity.getTransactionid());
 							alert.setAlertDT(new Timestamp(new Date().getTime()));
 							alert.setModifiedDt(new Timestamp(new Date().getTime()));
 							alertsRepo.save(alert);
@@ -261,7 +268,7 @@ public class ProcessEventsService {
 							alert = null;
 							LOGGER.info("Thread Id : [{}] - Alert Inserted SUccessfully...........", threadId);
 							Thread.sleep(10000);
-							toUpdateFinsecData(transactionEntity.getTransactionId(), ruleEntity.getAlertCategory(), threadId);
+							toUpdateFinsecData(transactionEntity.getTransactionid(), ruleEntity.getAlertCategory(), threadId);
 						} else {
 							LOGGER.warn("Thread Id : [{}] - MVEL Expression Match Status [ELSE] BLock : [{}]", threadId,match);
 						}
@@ -276,8 +283,7 @@ public class ProcessEventsService {
 			LOGGER.error("Thread Id : [{}] - Exception found in {}@{} : {}", threadId, clazzName, methodName, e);
 		} finally {
 			Long endTime = new Date().getTime();
-			LOGGER.info("Thread Id : [{}] - {}@processEvent Async End Time : [{}]\n\n", threadId, clazzName,
-					commonUtils.findIsHourMinSec((endTime - startTime)));
+			LOGGER.info("Thread Id : [{}] - {}@processEvent Async End Time : [{}]\n\n", threadId, clazzName, commonUtils.findIsHourMinSec((endTime - startTime)));
 			try { Thread.sleep(6000); } catch (InterruptedException e) {
 				Thread.currentThread().interrupt(); }
 			bean = null; payload = null; ruleDetails = null; funcList = null; factSetList = null; responseJson = null;
@@ -330,7 +336,6 @@ public class ProcessEventsService {
 	 * @param fsFinsecTxnEntity
 	 */
 	private void retryUpdate(FS_FinsecTxnEntity fsFinsecTxnEntity) { try { fs_FinsecTxnRepositry.save(fsFinsecTxnEntity); } catch (Exception e) { LOGGER.error("Retry ----> : {}",e); } finally { } }
-
 
 	/**
 	 * 
@@ -405,7 +410,6 @@ public class ProcessEventsService {
 		try {
 			if (StringUtils.isNotBlank(categoryPram)) {
 				switch (categoryPram.toUpperCase()) {
-
 				case RuleWhizConstants.STR:
 					fsFinsecTxnEntityObj.setStr(1);
 					break;

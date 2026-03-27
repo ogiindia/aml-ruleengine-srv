@@ -1,6 +1,5 @@
 package com.aml.srv.core.efrmsrv.rule.fact.service;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -9,7 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
+import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
@@ -17,36 +19,47 @@ import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 
 @Service("COUNTService")
-public class CountFact implements FactInterface{
+public class CountFact implements FactInterface {
 
 	private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);
-	
+
 	@Autowired
 	TransactionService transactionService;
-	
+
 	@Autowired
 	FS_FactConditionRepoImpl fS_FactConditionRepoImpl;
 
 	@Autowired
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
-	
+
 	@Autowired
 	CustomerDetailsService customerDetailsService;
 	
+	@Autowired
+	CustomerServiceForParqute customerServiceForParqute;
+	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+	
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
+		CustomerDetailsParquteEntity custDetails = null;
+		TransactionDetailsDTO dto = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -54,7 +67,7 @@ public class CountFact implements FactInterface{
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
@@ -62,86 +75,81 @@ public class CountFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
-			TransactionDetailsDTO dto =null;
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setForeignCountryCode(false);
 			computedFactsVOObj.setStrType("num");
-			if(condition!=null)
-			{                                                                                                                                    
-			if (condition.equals("LOW-CASH-PROFILE")) {
+			if (condition != null) {
+				if (condition.equals("LOW-CASH-PROFILE")) {
 
-				String profile = null;
+					String profile = null;
 
-				FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
-						requVoObjParam.getReqId());
-				if (conditionEntity != null && conditionEntity.getId() != null) {
+					FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
+							requVoObjParam.getReqId());
+					if (conditionEntity != null && conditionEntity.getId() != null) {
 
-					List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
-							.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
-									requVoObjParam.getReqId());
-					if (conditionAttribute != null && conditionAttribute.size() > 0) {
-						CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
-						if (custDetails != null) {
-							for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
-								if (gs.getAttributes().equals(custDetails.getCustomerCategory())) {
-									profile = gs.getAttributes();
+						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
+								.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
+										requVoObjParam.getReqId());
+						if (conditionAttribute != null && conditionAttribute.size() > 0) {
+							//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(), custId);
+							custDetails = customerServiceForParqute.getCustParqueEntity(custId, null);
+							if (custDetails != null) {
+								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
+									if (gs.getAttributes().equals(custDetails.getCustomercategory())) {
+										profile = gs.getAttributes();
+									}
 								}
 							}
 						}
-
 					}
-				}
 
-				if (profile != null) {
-					 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
-								transMode, days, months, factSetObj, range,hours);
+					if (profile != null) {
+						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
+								transMode, days, months, factSetObj, range, hours);*/
 						if (dto != null && dto.getCountAmount() != null) {
 
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
-							//computedFactsVOObj.setStrValue(profile);
-						}
-						else
-						{
+							// computedFactsVOObj.setStrValue(profile);
+						} else {
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(new BigDecimal(0));
 						}
-					
-				} else {
-
-					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setValue(new BigDecimal(0));
-
+					} else {
+						computedFactsVOObj.setFact(factName);
+						computedFactsVOObj.setValue(new BigDecimal(0));
+					}
 				}
-			}
-			}
-			else
-			{
-				 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
-						transMode, days, months, factSetObj, range,hours);
+			} else {
+				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType, transMode, days,
+						months, factSetObj, range, hours);*/
+				dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 				if (dto != null && dto.getCountAmount() != null) {
-
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
-				}
-				else {
-
+				} else {
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setValue(new BigDecimal(0));
-
 				}
 			}
-			
-
-		
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in CountFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			custDetails = null; dto = null; transSrvSrchFilevoObj = null;
+			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

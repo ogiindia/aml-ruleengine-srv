@@ -6,15 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 
 
 @Service("NEW_ACCOUNTService")
 public class NewAccountFact implements FactInterface{
-
 
 	private Logger LOGGER = LoggerFactory.getLogger(NewAccountFact.class);
 	

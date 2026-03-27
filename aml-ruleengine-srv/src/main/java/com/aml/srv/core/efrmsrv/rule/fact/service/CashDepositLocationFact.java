@@ -3,27 +3,35 @@ package com.aml.srv.core.efrmsrv.rule.fact.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
+import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
-import com.aml.srv.core.efrmsrv.entity.TransactionDetailsEntity;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
+import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
 @Service("CASH_DEPOSIT_LOCATIONService")
 public class CashDepositLocationFact implements FactInterface{
+
+    private final AMLConstants AMLConstants;
 
 	private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);
 	
@@ -39,6 +47,16 @@ public class CashDepositLocationFact implements FactInterface{
 	@Autowired
 	CustomerDetailsService customerDetailsService;
 	
+	@Autowired
+	CustomerServiceForParqute customerServiceForParqute;
+	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+
+    CashDepositLocationFact(AMLConstants AMLConstants) {
+        this.AMLConstants = AMLConstants;
+    }
+	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 
@@ -47,6 +65,9 @@ public class CashDepositLocationFact implements FactInterface{
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		CustomerDetailsParquteEntity custDetails = null;
+		List<TransactionDetailsDTO> dto = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -62,26 +83,38 @@ public class CashDepositLocationFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
-			List<TransactionDetailsEntity>  dto =null;
+			
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode("ATM");
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setForeignCountryCode(false);
+			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
+			//List<TransactionDetailsEntity>  dto =null;
 			computedFactsVOObj.setStrType("num");
-			if(condition!=null)
-			{                                                                                                                                    
-			if (condition.equals("OUTSIDE_MAOIST")) {
+			if (StringUtils.isNotBlank(condition) && condition.equalsIgnoreCase("OUTSIDE_MAOIST")) {
 
 				String profile = null;
 
-				FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
-						requVoObjParam.getReqId());
+				FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,requVoObjParam.getReqId());
 				if (conditionEntity != null && conditionEntity.getId() != null) {
 
 					List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
-							.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
-									requVoObjParam.getReqId());
+							.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 					if (conditionAttribute != null && conditionAttribute.size() > 0) {
-						CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+						//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+						custDetails = customerServiceForParqute.getCustParqueEntity(custId, null);
 						if (custDetails != null) {
 							for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
-								if (gs.getAttributes().equals(custDetails.getCustomerCategory())) {
+								if (gs.getAttributes().equals(custDetails.getCustomercategory())) {
 									profile = gs.getAttributes();
 								}
 							}
@@ -91,57 +124,39 @@ public class CashDepositLocationFact implements FactInterface{
 				}
 
 				if (profile != null) {
-					 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId,null, "W",
-								"ATM",false, days, months, factSetObj, range,hours);
-						if (dto != null && dto.size()>0) {
-
-							computedFactsVOObj.setFact(factName);
-							computedFactsVOObj.setValue(new BigDecimal(dto.size()));
-							
-						}
-						else
-						{
-							computedFactsVOObj.setFact(factName);
-							computedFactsVOObj.setValue(new BigDecimal(0));
-						}
-					
-				} else {
-
-					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setValue(new BigDecimal(0));
-
-				}
-			}
-			}
-			else
-			{
-				 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId,null, "W",
-							"ATM",false, days, months, factSetObj, range,hours);
-				 if (dto != null && dto.size()>0) {
-
+					/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, "W", "ATM", false,
+							days, months, factSetObj, range, hours);*/
+					dto = transactionServiceForParqute.getTransactionDetailsLst(transSrvSrchFilevoObj, reqId);
+					if (dto != null && dto.size() > 0) {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setValue(new BigDecimal(dto.size()));
-						
-					}
-					else
-					{
+					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setValue(new BigDecimal(0));
 					}
+				} else {
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setValue(new BigDecimal(0));
+				}
+
+			} else {
+				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, "W", "ATM", false,
+						days, months, factSetObj, range, hours);*/
+				dto = transactionServiceForParqute.getTransactionDetailsLst(transSrvSrchFilevoObj, reqId);
+				if (dto != null && dto.size() > 0) {
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setValue(new BigDecimal(dto.size()));
+				} else {
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setValue(new BigDecimal(0));
+				}
 			}
-			
-
-		
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in CashDepositLocationFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::CashDepositLocationFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			custDetails = null;  dto = null;  transSrvSrchFilevoObj = null;
+			LOGGER.info("REQID : [{}]::::::::::::CashDepositLocationFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

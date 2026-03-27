@@ -37,6 +37,9 @@ public class ColumnMapping implements Serializable{
 
 	@SerializedName("criteria")
 	private String criteria;
+	
+	@SerializedName("format")
+	private String format;
 
 	@SerializedName("from")
 	public String getFrom() {
@@ -97,5 +100,17 @@ public class ColumnMapping implements Serializable{
 	public void setCriteria(String criteria) {
 		this.criteria = criteria;
 	}
+
+	@SerializedName("format")
+	public String getFormat() {
+		return format;
+	}
+
+	@SerializedName("format")
+	public void setFormat(String format) {
+		this.format = format;
+	}
+	
+	
     
 }

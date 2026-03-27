@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
@@ -57,9 +57,7 @@ public class AvgCashDepositFact implements FactInterface{
 
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}

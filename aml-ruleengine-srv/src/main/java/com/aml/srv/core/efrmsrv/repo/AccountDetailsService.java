@@ -37,8 +37,7 @@ public class AccountDetailsService{
 		return null;
 	}
 	public String getAccountOpeningAndClosingDateByritiria(String reqId, String accNo, String custId) {
-		LOGGER.info("REQID : [{}] - AccountDetailsService@getAccountOpeningAndClosingDateByritiria method called...........",
-				reqId);
+		LOGGER.info("REQID : [{}] - AccountDetailsService@getAccountOpeningAndClosingDateByritiria method called...........", reqId);
 		CriteriaBuilder cb = null;
 		CriteriaQuery<AccountDetailsEntity> cq = null;
 		Root<AccountDetailsEntity> book = null;
@@ -62,20 +61,15 @@ public class AccountDetailsService{
 			}
 			
 			cq.where(predicates.toArray(new Predicate[] {}));
-
 			query = entityManager.createQuery(cq);
 			AccountDetailsEntity customerEnityObj = query.getSingleResult();
 			if (customerEnityObj != null && customerEnityObj.getAccountOpenedDate() != null) {
 				openingDate = customerEnityObj.getAccountOpenedDate();
 				if (customerEnityObj != null && customerEnityObj.getAccountClosedDate() != null) {
-					
-					combinedStr=openingDate+"@"+customerEnityObj.getAccountClosedDate();
+					combinedStr = openingDate + "@" + customerEnityObj.getAccountClosedDate();
+				} else {
+					combinedStr = openingDate;
 				}
-				else
-				{
-					combinedStr=openingDate;
-				}
-				
 				LOGGER.info("REQID : [{}] - retnVal : [{}]", reqId, combinedStr);
 			} else {
 				combinedStr = null;
@@ -84,7 +78,6 @@ public class AccountDetailsService{
 		} catch (Exception e) {
 			return null;
 		} finally {
-
 		}
 		return combinedStr;
 	}

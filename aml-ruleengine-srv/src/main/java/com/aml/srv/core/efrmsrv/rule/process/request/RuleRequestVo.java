@@ -3,6 +3,7 @@ package com.aml.srv.core.efrmsrv.rule.process.request;
 import java.io.Serializable;
 import java.util.List;
 
+import com.aml.srv.core.efrmsrv.ruleengine.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -41,6 +42,12 @@ public class RuleRequestVo implements Serializable {
 	
 	@JsonProperty("Factset")
 	private List<Factset> factSet;
+	
+	
+	@JsonProperty("schema")
+	private List<Schema> schema;
+	
+	
 
 	@JsonProperty("reqId")
 	public String getReqId() {
@@ -131,6 +138,16 @@ public class RuleRequestVo implements Serializable {
 	public void setTxnId(String txnId) {
 		this.txnId = txnId;
 	}
+
+	public List<Schema> getSchema() {
+		return schema;
+	}
+
+	public void setSchema(List<Schema> schema) {
+		this.schema = schema;
+	}
+	
+	
 	
 
 }

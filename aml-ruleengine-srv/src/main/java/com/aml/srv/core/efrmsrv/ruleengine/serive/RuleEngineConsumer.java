@@ -12,6 +12,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
 import com.aml.srv.core.efrmsrv.entity.TransactionDetailsEntity;
 import com.aml.srv.core.efrmsrv.kafka.repo.FinSecIndicatorVO;
 import com.aml.srv.core.efrmsrv.repo.TxnDetailsImpl;
@@ -22,15 +24,18 @@ import com.google.gson.Gson;
  * This class used for receive the file import status from AML Server
  */
 @Service
-public class AMLFileImportConsumer {
+public class RuleEngineConsumer {
 
-	private Logger LOGGER = LoggerFactory.getLogger(AMLFileImportConsumer.class);
+	private Logger LOGGER = LoggerFactory.getLogger(RuleEngineConsumer.class);
 
 	@Autowired
 	TxnDetailsImpl txnDetailsImpl;
 
 	@Autowired
 	private KafkaTemplate<String, String> template;
+	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
 
 	/**
 	 * 
@@ -49,6 +54,7 @@ public class AMLFileImportConsumer {
 	 */
 	private void processTransaction(String msg) {
 		FinSecIndicatorVO finSecIndicatorVOObj = null;
+		Integer minusDays =1;
 		try {
 			if (StringUtils.isNotBlank(msg)) {
 				LOGGER.info("Received Message [IF]: {}", msg);
@@ -58,12 +64,35 @@ public class AMLFileImportConsumer {
 					if (StringUtils.isNotBlank(finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady()) && finSecIndicatorVOObj
 							.getCsv2DuckDbImprtIsReady().equalsIgnoreCase(RuleWhizConstants.YES)) {
 						LOGGER.info("AMLFileImportConsumer Csv2DuckDbImprtIsReady [IF]: {}", finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady());
+						
+						/**Get from Parqute**/
+						
+						List<TransactionParquteMppaing> tansParquMappLst = 	transactionServiceForParqute.getTransDetailsFromProperty(minusDays);
+						if(tansParquMappLst!=null) {
+							for(TransactionParquteMppaing trasnDataEntity :tansParquMappLst) {
+								LOGGER.debug("AMLRuleEngineConsumer - Transaction Batch ID  : [{}]", trasnDataEntity.getTransactionid());
+								//Record Publish kafka for Rule ENgine Dynamic Listener(Dynamic Listener In RuleExecutorService.java same Project)
+								ProducerRecord<String, String> record = new ProducerRecord<String, String>(
+										RuleWhizConstants.KAFKA_PUB_TOPIC_DYNAMIC, null,
+										trasnDataEntity.getTransactionid(), new Gson().toJson(trasnDataEntity));
 
+								template.send(record); // Published successfully
+
+								// Record publish kafak for Sanction List Check (Listener In RT Engine Project)
+								ProducerRecord<String, String> recordForSanctionList = new ProducerRecord<String, String>(
+										RuleWhizConstants.KAFKA_PUB_TOPIC_SANCTIONLIST, null,
+										trasnDataEntity.getTransactionid(), new Gson().toJson(trasnDataEntity));
+								template.send(recordForSanctionList);
+							}
+						}
+					
+						/****From Table*****/
+						/*
 						List<TransactionDetailsEntity> transDetailsEntyLstObj = txnDetailsImpl.toGetTxnDetailsBydate();
-						LOGGER.info("AMLFileImportConsumer - transListObj  : [{}]", transDetailsEntyLstObj);
+						LOGGER.info("AMLRuleEngineConsumer - transListObj  : [{}]", transDetailsEntyLstObj);
 
 						for (TransactionDetailsEntity trasnDataEntity : transDetailsEntyLstObj) {
-							LOGGER.debug("AMLFileImportConsumer - Transaction Batch ID  : [{}]", trasnDataEntity.getTransactionBatchId());
+							LOGGER.debug("AMLRuleEngineConsumer - Transaction Batch ID  : [{}]", trasnDataEntity.getTransactionBatchId());
 							//Record Publish kafka for Rule ENgine Dynamic Listener(Dynamic Listener In RuleExecutorService.java same Project)
 							ProducerRecord<String, String> record = new ProducerRecord<String, String>(
 									RuleWhizConstants.KAFKA_PUB_TOPIC_DYNAMIC, null,
@@ -78,19 +107,19 @@ public class AMLFileImportConsumer {
 							template.send(recordForSanctionList);
 
 						}
-
+						*/
 					} else {
-						LOGGER.info("AMLFileImportConsumer Csv2DuckDbImprtIsReady [ELSE]: {}",
+						LOGGER.info("AMLRuleEngineConsumer Csv2DuckDbImprtIsReady [ELSE]: {}",
 								finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady());
 					}
 				} else {
-					LOGGER.info("AMLFileImportConsumer conversion [ELSE]: {}", finSecIndicatorVOObj);
+					LOGGER.info("AMLRuleEngineConsumer conversion [ELSE]: {}", finSecIndicatorVOObj);
 				}
 			} else {
 				LOGGER.info("Received Message [ELSE]: {}", msg);
 			}
 		} catch (Exception e) {
-			LOGGER.error("Exception found in AMLFileImportConsumer@processTransaction : {}", e);
+			LOGGER.error("Exception found in AMLRuleEngineConsumer@processTransaction : {}", e);
 		} finally {
 			finSecIndicatorVOObj = null;
 		}

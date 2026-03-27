@@ -1,60 +1,57 @@
 package com.aml.srv.core.efrmsrv.rule.fact.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrmsrv.entity.AccountDetailsEntity;
-import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
+import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
-import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 
-
 @Service("CUSTOMER_PROFILEService")
-public class CustomerProfileFact implements FactInterface{
+public class CustomerProfileFact implements FactInterface {
 
-	
 	@Autowired
 	TransactionService transactionService;
-	
-	
+
 	@Autowired
 	CustomerDetailsService customerDetailsService;
-	
+
 	@Autowired
 	FS_FactConditionRepoImpl fS_FactConditionRepoImpl;
 
 	@Autowired
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
 
+	@Autowired
+	CustomerServiceForParqute customerServiceForParqute;
 	
-
 	private Logger LOGGER = LoggerFactory.getLogger(CustomerProfileFact.class);
-	
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::CustomerProfileFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -62,7 +59,7 @@ public class CustomerProfileFact implements FactInterface{
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
@@ -72,25 +69,22 @@ public class CustomerProfileFact implements FactInterface{
 
 			String condition = factSetObj.getCondition();
 			computedFactsVOObj.setValue(new BigDecimal(0));
-			TransactionDetailsDTO dto =null;
 
 			if (condition != null) {
 				if (condition.equals("NONPROFITENTITIES")) {
-
 					String profile = null;
-
 					FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
 							requVoObjParam.getReqId());
 					if (conditionEntity != null && conditionEntity.getId() != null) {
-
 						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
-								.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
-										requVoObjParam.getReqId());
+								.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
-							CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+							//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(), custId);
+							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
-									if (gs.getAttributes().equals(custDetails.getCustomerCategory())) {
+									if (StringUtils.isNotBlank(custDetails.getCustomercategory()) 
+											&& gs.getAttributes().equals(custDetails.getCustomercategory())) {
 										profile = gs.getAttributes();
 									}
 								}
@@ -99,57 +93,50 @@ public class CustomerProfileFact implements FactInterface{
 						}
 					}
 					if (profile != null) {
-						computedFactsVOObj.setFact(factName);						
-						computedFactsVOObj.setStrValue(profile);
-						computedFactsVOObj.setStrType("str");
-					}
-					else
-					{
-						computedFactsVOObj.setFact(factName);						
-						computedFactsVOObj.setStrValue("NIL");
-						computedFactsVOObj.setStrType("str");
-					}
-
-					/*if (profile != null) {
-						 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
-									transMode, days, months, factSetObj, range);
-							if (dto != null && dto.getMaxAmount() != null) {
-
-								computedFactsVOObj.setFact(factName);
-								computedFactsVOObj.setValue((dto.getMaxAmount()));
-								computedFactsVOObj.setStrValue(profile);
-							}
-							else
-							{
-								computedFactsVOObj.setFact(factName);
-								computedFactsVOObj.setValue(new BigDecimal(0));
-							}
-						
-					} else {
-
 						computedFactsVOObj.setFact(factName);
-						computedFactsVOObj.setValue(new BigDecimal(0));
-
+						computedFactsVOObj.setStrValue(profile);
+						computedFactsVOObj.setStrType("str");
+					} else {
+						computedFactsVOObj.setFact(factName);
+						computedFactsVOObj.setStrValue("NIL");
+						computedFactsVOObj.setStrType("str");
 					}
-					*/
-				}
-				else if (condition.equals("ISPARTYTYPEAGENTORDEALER")) {
 
+					/*
+					 * if (profile != null) { dto = transactionService.getTransactionDetails(reqId,
+					 * custId, accNo, txnId, transType, transMode, days, months, factSetObj, range);
+					 * if (dto != null && dto.getMaxAmount() != null) {
+					 * 
+					 * computedFactsVOObj.setFact(factName);
+					 * computedFactsVOObj.setValue((dto.getMaxAmount()));
+					 * computedFactsVOObj.setStrValue(profile); } else {
+					 * computedFactsVOObj.setFact(factName); computedFactsVOObj.setValue(new
+					 * BigDecimal(0)); }
+					 * 
+					 * } else {
+					 * 
+					 * computedFactsVOObj.setFact(factName); computedFactsVOObj.setValue(new
+					 * BigDecimal(0));
+					 * 
+					 * }
+					 */
+				} else if (condition.equals("ISPARTYTYPEAGENTORDEALER")) {
 					String profile = null;
-
 					FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
 							requVoObjParam.getReqId());
 					if (conditionEntity != null && conditionEntity.getId() != null) {
-
-						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
-								.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
-										requVoObjParam.getReqId());
+						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
-							CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+							/*
+							 * CustomerDetailsEntity custDetails = customerDetailsService
+							 * .getCustomerDetails(requVoObjParam.getReqId(), custId);
+							 */
+							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
-									profile="RealEstateAgent";
-									if (gs.getAttributes().equals(custDetails.getCustomerType())) {
+									profile = "RealEstateAgent";
+									if (StringUtils.isNoneBlank(custDetails.getCustomertype())
+											&& gs.getAttributes().equals(custDetails.getCustomertype())) {
 										profile = gs.getAttributes();
 									}
 								}
@@ -159,33 +146,29 @@ public class CustomerProfileFact implements FactInterface{
 					}
 
 					if (profile != null) {
-						computedFactsVOObj.setFact(factName);						
+						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue(profile);
 						computedFactsVOObj.setStrType("str");
-					}
-					else
-					{
-						computedFactsVOObj.setFact(factName);						
+					} else {
+						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NIL");
 						computedFactsVOObj.setStrType("str");
 					}
-				}
-				else if (condition.equals("LOW-CASH-PROFILE")) {
-
+				} else if (condition.equals("LOW-CASH-PROFILE")) {
 					String profile = null;
-
-					FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition,
-							requVoObjParam.getReqId());
+					FS_FactConditionEntity conditionEntity = fS_FactConditionRepoImpl.getFactCondititon(condition, requVoObjParam.getReqId());
 					if (conditionEntity != null && conditionEntity.getId() != null) {
-
 						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl
-								.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
-										requVoObjParam.getReqId());
+								.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
-							CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+							/*
+							 * CustomerDetailsEntity custDetails = customerDetailsService
+							 * .getCustomerDetails(requVoObjParam.getReqId(), custId);
+							 */
+							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
-									if (gs.getAttributes().equals(custDetails.getCustomerCategory())) {
+									if (gs.getAttributes().equals(custDetails.getCustomercategory())) {
 										profile = gs.getAttributes();
 									}
 								}
@@ -195,25 +178,17 @@ public class CustomerProfileFact implements FactInterface{
 					}
 
 					if (profile != null) {
-						computedFactsVOObj.setFact(factName);						
+						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue(profile);
 						computedFactsVOObj.setStrType("str");
-					}
-					else
-					{
-						computedFactsVOObj.setFact(factName);						
+					} else {
+						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NIL");
 						computedFactsVOObj.setStrType("str");
 					}
-				}
-				
+				} else {LOGGER.debug("REQID : [{}] - Given Fact Not Match....",requVoObjParam.getReqId()); }
 
-			}
-			else
-			{
-				
-			}
-			
+			} else { LOGGER.debug("REQID : [{}] - Condition is Null....", requVoObjParam.getReqId());}
 
 		} catch (Exception e) {
 			LOGGER.error("Exception found in CustomerProfileFact@getFactExecutor : {}", e);

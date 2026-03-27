@@ -8,11 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -20,76 +23,81 @@ import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 @Service("SUM_DEPOSITSService")
-public class SumDepositFact implements FactInterface{
-
+public class SumDepositFact implements FactInterface {
 
 	private Logger LOGGER = LoggerFactory.getLogger(SumDepositFact.class);
-	
+
 	@Autowired
 	TransactionService transactionService;
-	
+
 	@Autowired
 	FS_FactConditionRepoImpl fS_FactConditionRepoImpl;
 
 	@Autowired
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
-	
+
 	@Autowired
 	AccountDetailsService accountDetailsService;
+	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
 
-		@Override
-		public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	@Override
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
-			ComputedFactsVO computedFactsVOObj = null;
-			LOGGER.info("REQID : [{}]::::::::::::SumDepositFact@getFactExecutor (ENTRY) Called::::::::::",
-					requVoObjParam.getReqId());
-			String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-					txnTime = null, txnId = null, reqId = null;
-			try {
-				computedFactsVOObj = new ComputedFactsVO();
-				accNo = requVoObjParam.getAccountNo();
-				custId = requVoObjParam.getCustomerId();
-				txnId = requVoObjParam.getTxnId();
-				reqId = requVoObjParam.getReqId();
-				transMode = requVoObjParam.getTransactionMode();
-				transType = requVoObjParam.getTxnType();			
-				factName = factSetObj.getFact();
-				Integer days = factSetObj.getDays();
-				Integer hours = factSetObj.getHours();
-				Integer months = factSetObj.getMonths();
-				txnTime = requVoObjParam.getTxn_time();
-				Range range = factSetObj.getRange();
-				String condition = factSetObj.getCondition();
-				TransactionDetailsDTO dto =null;
-				computedFactsVOObj.setStrType("num");
-				
-				{
-				
-				 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, AMLConstants.DEPOSIT,
-						transMode, days, months, factSetObj, range,hours);
-				if (dto != null && dto.getSumAmount() != null) {
-
-					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setValue(dto.getSumAmount());
-				}
-				else
-				{
-					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setValue(new BigDecimal(0));
-				}
-				}
-
-			} catch (Exception e) {
-				LOGGER.error("Exception found in SumDepositFact@getFactExecutor : {}", e);
-			} finally {
-
-				LOGGER.info("REQID : [{}]::::::::::::SumDepositFact@getFactExecutor (EXIT) End::::::::::\n\n",
-						requVoObjParam.getReqId());
+		ComputedFactsVO computedFactsVOObj = null;
+		LOGGER.info("REQID : [{}]::::::::::::SumDepositFact@getFactExecutor (ENTRY) Called::::::::::",
+				requVoObjParam.getReqId());
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
+		TransactionDetailsDTO dto = null;
+		try {
+			computedFactsVOObj = new ComputedFactsVO();
+			accNo = requVoObjParam.getAccountNo();
+			custId = requVoObjParam.getCustomerId();
+			txnId = requVoObjParam.getTxnId();
+			reqId = requVoObjParam.getReqId();
+			transMode = requVoObjParam.getTransactionMode();
+			transType = requVoObjParam.getTxnType();
+			factName = factSetObj.getFact();
+			Integer days = factSetObj.getDays();
+			Integer hours = factSetObj.getHours();
+			Integer months = factSetObj.getMonths();
+			txnTime = requVoObjParam.getTxn_time();
+			Range range = factSetObj.getRange();
+			String condition = factSetObj.getCondition();
+			
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
+			computedFactsVOObj.setStrType("num");
+			/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, AMLConstants.DEPOSIT, transMode,
+					days, months, factSetObj, range, hours);*/
+			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+			if (dto != null && dto.getSumAmount() != null) {
+				computedFactsVOObj.setFact(factName);
+				computedFactsVOObj.setValue(dto.getSumAmount());
+			} else {
+				computedFactsVOObj.setFact(factName);
+				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-			return computedFactsVOObj;
-
+		} catch (Exception e) {
+			LOGGER.error("Exception found in SumDepositFact@getFactExecutor : {}", e);
+		} finally {
+			LOGGER.info("REQID : [{}]::::::::::::SumDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
-
+		return computedFactsVOObj;
+	}
 }
-
-

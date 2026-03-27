@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.ParquetService;
+import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
 import com.aml.srv.core.efrmsrv.entity.AccountDetailsEntity;
 import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
@@ -18,40 +21,40 @@ import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 
-
-
 @Service("ACCOUNT_TYPESService")
-public class AccountTypeFact implements FactInterface{
+public class AccountTypeFact implements FactInterface {
 
-	
 	@Autowired
 	TransactionService transactionService;
-	
+
 	@Autowired
 	FS_FactConditionRepoImpl fS_FactConditionRepoImpl;
 
 	@Autowired
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
-	
+
 	@Autowired
 	CustomerDetailsService customerDetailsService;
-	
+
 	@Autowired
 	AccountDetailsService accountDetailsService;
 
-	private Logger LOGGER = LoggerFactory.getLogger(AccountTypeFact.class);
-	
-	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	@Autowired
+	ParquetService parquetService;
 
+	private Logger LOGGER = LoggerFactory.getLogger(AccountTypeFact.class);
+
+	@Override
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::AccountTypeFact@getFactExecutor (ENTRY) Called::::::::::",
-				requVoObjParam.getReqId());
+		LOGGER.info("REQID : [{}]::::::::::::AccountTypeFact@getFactExecutor (ENTRY) Called::::::::::", requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
 		try {
@@ -69,41 +72,40 @@ public class AccountTypeFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
-			AccountDetailsEntity dto = null;
+			// AccountDetailsEntity dto = null;
+			AccountDetailsParquteEntity dto = null;
 			computedFactsVOObj.setStrType("str");
+			// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit,  srchStr
+			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null);
+			List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",AccountDetailsParquteEntity.class, srchDto,null);
 			if (condition != null) {
 				if (condition.equals("CA_NON_PUBLIC")) {
-
-					dto = accountDetailsService.getAccountDetails(reqId, custId, accNo);
-					
-					if (dto != null && dto.getAccountType() != null) {
-
-						computedFactsVOObj.setFact(factName);
-						computedFactsVOObj.setStrValue(dto.getAccountType());
+					if (lstAc != null && lstAc.size() > 0) {
+						dto = lstAc.get(0);
 					}
-					else
-					{
-
-							computedFactsVOObj.setFact(factName);
-							computedFactsVOObj.setStrValue("PUBLIC");
-						}
-
-					
+					// dto = accountDetailsService.getAccountDetails(reqId, custId, accNo);
+					if (dto != null && dto.getAccounttype() != null) {
+						computedFactsVOObj.setFact(factName);
+						computedFactsVOObj.setStrValue(dto.getAccounttype());
+					} else {
+						computedFactsVOObj.setFact(factName);
+						computedFactsVOObj.setStrValue("PUBLIC");
+					}
 				}
 
 			} else {
-				dto = accountDetailsService.getAccountDetails(reqId, custId, accNo);
-				if (dto != null && dto.getAccountType() != null) {
-
+				if (lstAc != null && lstAc.size() > 0) {
+					dto = lstAc.get(0);
+				}
+				// dto = accountDetailsService.getAccountDetails(reqId, custId, accNo);
+				if (dto != null && dto.getAccounttype() != null) {
 					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setStrValue(dto.getAccountType());
+					computedFactsVOObj.setStrValue(dto.getAccounttype());
 				}
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in AccountTypeFact@getFactExecutor : {}", e);
 		} finally {
-
 			LOGGER.info("REQID : [{}]::::::::::::AccountTypeFact@getFactExecutor (EXIT) End::::::::::\n\n",
 					requVoObjParam.getReqId());
 		}

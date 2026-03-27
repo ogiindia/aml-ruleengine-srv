@@ -247,7 +247,12 @@ public class RulesUtils {
 		}
 		return perCentageValue;
 	}
-
+	/**
+	 * 
+	 * @param computedFacts
+	 * @param largeDeposit
+	 * @return
+	 */
 	public boolean toCheckObjectList(List<ComputedFactsVO> computedFacts, String largeDeposit) {
 
 		boolean finalCheck = false;

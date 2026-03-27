@@ -8,10 +8,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.ParquetService;
+import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.AccountStatusEntity;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -31,6 +37,12 @@ public class MaxFact implements FactInterface{
 	@Autowired
 	AccountDetailsService accountDetailsService;
 	
+	@Autowired
+	ParquetService parquetService;
+	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+	
 	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
@@ -40,6 +52,7 @@ public class MaxFact implements FactInterface{
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -60,45 +73,72 @@ public class MaxFact implements FactInterface{
 				if (condition.equals("DORMANT_REACTIVATION")) {
 					accNo = requVoObjParam.getAccountNo();
 					custId = null;
-					AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo,
-							requVoObjParam.getReqId());
+					/*AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo,
+							requVoObjParam.getReqId());*/
+					AccountDetailsParquteEntity acctStatus = null;
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto,null);
+					if (lstAc != null && lstAc.size() > 0) {
+						acctStatus = lstAc.get(0);
+					}
+					
 					if (acctStatus != null && acctStatus.getStatus() != null && acctStatus.getStatus().equals("06")) {
 						String status = acctStatus.getStatus();
 						computedFactsVOObj.setAccountStatus(status);
-						computedFactsVOObj.setAcc_Re_date(acctStatus.getChangeDate());
+						computedFactsVOObj.setAcc_Re_date(acctStatus.getAccountLastUpdatedDate());
 						computedFactsVOObj.setStrValue("DORMANT_REACTIVATION");
-						dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
-								days, months, factSetObj, range,hours);
+						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
+								days, months, factSetObj, range,hours);*/
+						transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+						transSrvSrchFilevoObj.setAccNo(accNo);
+						transSrvSrchFilevoObj.setConditionName(condition);
+						transSrvSrchFilevoObj.setCustId(custId);
+						transSrvSrchFilevoObj.setDays(days);
+						transSrvSrchFilevoObj.setFactName(factName);
+						transSrvSrchFilevoObj.setHours(hours);
+						transSrvSrchFilevoObj.setMonths(months);
+						transSrvSrchFilevoObj.setRange(range);
+						transSrvSrchFilevoObj.setTransMode(transMode);
+						transSrvSrchFilevoObj.setTransType(transType);
+						transSrvSrchFilevoObj.setTxnNo(txnId);
+						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
 						computedFactsVOObj.setStrType("num");
 						if (dto != null && dto.getCountAmount() != null) {
-
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
-						}
-						else
-						{
+						} else {
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(new BigDecimal(0));
 						}
-
 					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NO_DORMANT_REACTIVATION");
 						computedFactsVOObj.setValue(new BigDecimal(0));
 					}
-
 				}
 			} else {
-				dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType, transMode, days,
-						months, factSetObj, range,hours);
+				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType, transMode, days,
+						months, factSetObj, range,hours);*/
+				transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+				transSrvSrchFilevoObj.setAccNo(accNo);
+				transSrvSrchFilevoObj.setConditionName(condition);
+				transSrvSrchFilevoObj.setCustId(custId);
+				transSrvSrchFilevoObj.setDays(days);
+				transSrvSrchFilevoObj.setFactName(factName);
+				transSrvSrchFilevoObj.setHours(hours);
+				transSrvSrchFilevoObj.setMonths(months);
+				transSrvSrchFilevoObj.setRange(range);
+				transSrvSrchFilevoObj.setTransMode(transMode);
+				transSrvSrchFilevoObj.setTransType(transType);
+				transSrvSrchFilevoObj.setTxnNo(txnId);
+				dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+				
 				computedFactsVOObj.setStrType("num");
 				if (dto != null && dto.getCountAmount() != null) {
 
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
-				}
-				else
-				{
+				} else {
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setValue(new BigDecimal(0));
 				}
@@ -107,12 +147,8 @@ public class MaxFact implements FactInterface{
 		} catch (Exception e) {
 			LOGGER.error("Exception found in CountFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

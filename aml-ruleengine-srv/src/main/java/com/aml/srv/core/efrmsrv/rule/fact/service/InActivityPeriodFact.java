@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrmsrv.entity.AccountDetailsEntity;
-import com.aml.srv.core.efrmsrv.entity.AccountStatusEntity;
+import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.ParquetService;
+import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -31,6 +34,13 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	
 	@Autowired
 	AccountDetailsService accountDetailsService;
+	
+	@Autowired
+	ParquetService parquetService;
+
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+
 	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
@@ -60,10 +70,18 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			computedFactsVOObj.setFact(factName);
 			if (condition != null) {
 				if (condition.equals("NEW_ACCOUNT")) {
-					AccountDetailsEntity acctDetails = accountDetailsService
-							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
+					AccountDetailsParquteEntity acctDetails = null;
+					//AccountDetailsEntity acctDetails = accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
+					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
+							null, null, null,null,null);
+					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto,null);
+					if (lstAc != null && lstAc.size() > 0) {
+						acctDetails = lstAc.get(0);
+					}
+					
 					if (acctDetails != null && acctDetails.getAccountOpenedDate() != null) {
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+						String format = transactionServiceForParqute.getTransactionDateFormat();
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 						LocalDate openDate = LocalDate.parse(acctDetails.getAccountOpenedDate(), formatter);
 						LocalDate currentDate = LocalDate.now();
 						System.out.println(openDate); // Output: 2025-05-20
@@ -83,26 +101,25 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 							computedFactsVOObj.setStrValue("OLD");
 						}
 					} else {
-
 						computedFactsVOObj.setStrValue("OLD");
 					}
-
 				}
-				
-					
 
-			}
-			else
-			{
-				
-				AccountStatusEntity acctStatus=accountDetailsService.getAccountStatusByAccNO(accNo, reqId);
-			
-			if (acctStatus != null && acctStatus.getStatus() != null) {
-
-				computedFactsVOObj.setFact(factName);
-				computedFactsVOObj.setStrValue(acctStatus.getStatus());
-				computedFactsVOObj.setStrType("str");
-			}
+			} else {
+				//AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo, reqId);
+				AccountDetailsParquteEntity acctStatus = null;
+				SearchFieldsDTO srchDto = new SearchFieldsDTO(null, accNo, null, null, null, null, null, null, null,
+						null, null, null,null);
+				List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",
+						AccountDetailsParquteEntity.class, srchDto, null);
+				if (lstAc != null && lstAc.size() > 0) {
+					acctStatus = lstAc.get(0);
+				}
+				if (acctStatus != null && acctStatus.getStatus() != null) {
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setStrValue(acctStatus.getStatus());
+					computedFactsVOObj.setStrType("str");
+				}
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in AccountStatusFact@getFactExecutor : {}", e);

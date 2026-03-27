@@ -19,8 +19,8 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
 import com.aml.srv.core.efrmsrv.entity.NormalizedTblEntity;
-import com.aml.srv.core.efrmsrv.entity.TransactionDetailsEntity;
 import com.aml.srv.core.efrmsrv.ruleengine.RulewhizConfig;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 import com.google.gson.Gson;
@@ -81,7 +81,6 @@ public class RuleExecutorService {
 		try {
 			LOGGER.info("Dynamic Kafak Lister Creation Method Called............");
 			containers = new ArrayList<>();
-
 			Integer rouleCount = appConfig.ruleEntity.size();
 			LOGGER.info("Dynamic Kafak Lister Creation rouleCount [{}] : ", rouleCount);
 			for (int i = 0; i < rouleCount; i++) {
@@ -93,15 +92,15 @@ public class RuleExecutorService {
 				container.getContainerProperties().setAsyncAcks(true);
 				container.setConcurrency(3);
 				container.setupMessageListener((AcknowledgingMessageListener<String, String>) (record, acknowledgment) -> {
-
 					//LOGGER.info("Time : {}", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 					//LOGGER.info("Group: [{}] | Message : [{}]\n",KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), record.value());
-
 					//processEvent(new Gson().fromJson(record.value(), TransactionDetailsEntity.class), KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), ruleEntity);
 					//ProcessEventsService myService = context.getBean(ProcessEventsService.class);
-					myService.processEvent(new Gson().fromJson(record.value(), TransactionDetailsEntity.class),
+					/*myService.processEvent(new Gson().fromJson(record.value(), TransactionDetailsEntity.class),
 							RuleWhizConstants.KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), ruleEntity);
-					
+					*/
+					myService.processEvent(new Gson().fromJson(record.value(), TransactionParquteMppaing.class),
+							RuleWhizConstants.KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), ruleEntity);
 					if (acknowledgment != null) {
 						acknowledgment.acknowledge();
 						LOGGER.info("Group: [{}]  acknowledgment completed...........\n", appConfig.ruleEntity.get(groupId).getId());
@@ -115,11 +114,9 @@ public class RuleExecutorService {
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 					}
-					
 				});
 				container.start();
 				containers.add(container);
-				
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in {}@{} : {}", clazzName, methodName, e);

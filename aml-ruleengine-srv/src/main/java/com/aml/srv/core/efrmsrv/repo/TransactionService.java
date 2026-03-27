@@ -773,15 +773,9 @@ public class TransactionService {
 	
 	public TransactionDetailsDTO getTransactionDetails(String reqId, String custId, String account, String txnId,
 			String txnType,String deposiwithdrawal, String transactionMode, Integer days, Integer months, Factset factSetObj, Range range) {
-
-		LOGGER.info("REQID : [{}] - TransactionDetailsRepositryImpl@ruleOfImmediateWithdraw method called...........",
-				reqId);
-
+		LOGGER.info("REQID : [{}] - TransactionDetailsRepositryImpl@getTransactionDetails method called...........",reqId);
 		TransactionDetailsDTO dto = new TransactionDetailsDTO();
-		LOGGER.info("REQID : [{}] - TransactionDetailsRepositryImpl@getCountValue method called...........", reqId);
-		LOGGER.info(
-				"REQID : [{}] - custId [{}] accNo : [{}] txnId [{}] transType : [{}] transactionMode [{}]  days : [{}] months [{}]",
-				reqId, custId, account, txnId, txnType, transactionMode, days, months);
+		LOGGER.info( "REQID : [{}] - custId [{}] accNo : [{}] txnId [{}] transType : [{}] transactionMode [{}]  days : [{}] months [{}]", reqId, custId, account, txnId, txnType, transactionMode, days, months);
 		BigDecimal retnVal = null;
 		CriteriaBuilder cb = null;
 		List<Predicate> predicates = null;
@@ -808,12 +802,6 @@ public class TransactionService {
 			if (StringUtils.isNotBlank(deposiwithdrawal)) {
 				predicates.add(cb.equal(rootBk.get("depositorWithdrawal"), deposiwithdrawal));
 			}
-			
-			
-			
-			
-			
-
 			if (StringUtils.isNotBlank(transactionMode) && transactionMode.equals("CASH")) {
 				List<String> channeltype = Arrays.asList("ATM", "CASH");
 				Predicate inchanneltype = (rootBk.get("channelType").in(channeltype));
@@ -824,8 +812,7 @@ public class TransactionService {
 				Predicate notInClause = cb.not(inchanneltype);
 				predicates.add(notInClause);
 
-			}
-			else if (StringUtils.isNotBlank(transactionMode) && transactionMode.equals("BOTH")) {
+			} else if (StringUtils.isNotBlank(transactionMode) && transactionMode.equals("BOTH")) {
 				
 			}
 			
@@ -875,17 +862,11 @@ public class TransactionService {
 			LOGGER.info("REQID : [{}] - columnName is :", reqId);
 			if (predicates != null) {
 				cq.where(cb.and(predicates.toArray(new Predicate[0])));
-				
-				
 				Expression<Double> maxOf = cb.max(rootBk.get("amount"));
 				Expression<Long> countOf = cb.count(rootBk);
 				Expression<String> maxDateExp = cb.greatest(rootBk.<String>get("transactionDate"));
 				// Expression<String> addressExp = rootBk.get("counterCountryCode");
 
-			
-				
-
-				
 				cq.multiselect(cb.count(rootBk), cb.count(rootBk.get("amount")), cb.sum(rootBk.get("amount")),
 						cb.min(rootBk.get("amount")), cb.max(rootBk.get("amount")),cb.avg(rootBk.get("amount")), cb.countDistinct(rootBk.get("counterpartyAccountNo")), maxDateExp);
 				Object[] result = entityManager.createQuery(cq).getSingleResult();
@@ -927,6 +908,7 @@ public class TransactionService {
 		return dto;
 
 	}
+	
 	public TransactionDetailsDTO getTransactionDetails(String reqId, String custId, String account, String txnId,
 			String txnType,String deposiwithdrawal, String transactionMode, Integer days, Integer months, Factset factSetObj, Range range,boolean skipCurrentMonth) {
 
@@ -1123,14 +1105,7 @@ public class TransactionService {
 			if (StringUtils.isNotBlank(txnType)) {
 				predicates.add(cb.equal(rootBk.get("transactionType"), txnType));
 			}
-			
-			
-			
 
-			
-			
-
-			
 			if (predicates != null) {
 				cq.where(cb.and(predicates.toArray(new Predicate[0])));
 				query = entityManager.createQuery(cq);
@@ -1162,7 +1137,8 @@ public class TransactionService {
 	}
 	
 	public TransactionDetailsDTO getTransactionDetails(String reqId, String custId, String account, String txnId,
-			String txnType,String deposiwithdrawal, String transactionMode,boolean foreignCountryCode, Integer days, Integer months, Factset factSetObj, Range range,boolean amountOnly) {
+			String txnType,String deposiwithdrawal, String transactionMode,boolean foreignCountryCode, Integer days, Integer months, Factset factSetObj, Range range,
+			boolean amountOnly) {
 
 		LOGGER.info("REQID : [{}] - TransactionDetailsRepositryImpl@ruleOfImmediateWithdraw method called...........",
 				reqId);
@@ -1220,8 +1196,7 @@ public class TransactionService {
 				Predicate notInClause = cb.not(inchanneltype);
 				predicates.add(notInClause);
 
-			}
-			else if (StringUtils.isNotBlank(transactionMode) && transactionMode.equals("BOTH")) {
+			} else if (StringUtils.isNotBlank(transactionMode) && transactionMode.equals("BOTH")) {
 				
 			}
 			
@@ -1301,6 +1276,7 @@ public class TransactionService {
 		return dto;
 
 	}
+	
 	public List<TransactionDetailsEntity> getTransactionDetails(String reqId, String custId, String account, String txnId,
 			String txnType,String deposiwithdrawal, String transactionMode,boolean foreignCountryCode, Integer days, Integer months, Factset factSetObj, Range range,Integer hours) {
 

@@ -90,7 +90,7 @@ public class FileWatcher {
 	 * watchDirectory
 	 * void
 	 */
-	@PostConstruct
+	//@PostConstruct
 	public void watchDirectory() {
 		Thread thread = new Thread(() -> {
 			boolean completedFileCountSts=false;

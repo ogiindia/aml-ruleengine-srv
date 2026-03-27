@@ -8,34 +8,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
-
 
 @Service("SUM_NONCASH_TXNSService")
-public class SumNonCashTxnFact implements FactInterface{
+public class SumNonCashTxnFact implements FactInterface {
 
+	private Logger LOGGER = LoggerFactory.getLogger(SumNonCashTxnFact.class);
 
-
-private Logger LOGGER = LoggerFactory.getLogger(SumNonCashTxnFact.class);
-	
 	@Autowired
 	TransactionService transactionService;
 	
-	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::SumNonCashTxnFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
+		TransactionDetailsDTO dto = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -43,38 +47,46 @@ private Logger LOGGER = LoggerFactory.getLogger(SumNonCashTxnFact.class);
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
 			Integer months = factSetObj.getMonths();
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
+			String condition = factSetObj.getCondition();
+			
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode("NON-CASH");
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setForeignCountryCode(false);
 
-			TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
-					"NON-CASH", days, months, factSetObj, range,hours);
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
+					"NON-CASH", days, months, factSetObj, range, hours);*/
+			
+			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getSumAmount() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(dto.getSumAmount());
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in SumNonCashTxnFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::SumNonCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::SumNonCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
-
 }

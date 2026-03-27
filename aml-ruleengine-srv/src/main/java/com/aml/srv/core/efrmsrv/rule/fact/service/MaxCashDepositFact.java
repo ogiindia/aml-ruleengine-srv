@@ -1,6 +1,7 @@
 package com.aml.srv.core.efrmsrv.rule.fact.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,8 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
+import com.aml.srv.core.efrmsrv.repo.SummarizationDataImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -26,10 +30,14 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	@Autowired
 	TransactionService transactionService;
 	
+	@Autowired
+	SummarizationDataImpl summarizationDataImpl;
+	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 
 		ComputedFactsVO computedFactsVOObj = null;
+		List<SummarizationDataEntity> sumLstObj =  null;
 		LOGGER.info("REQID : [{}]::::::::::::MaxCashDepositFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
@@ -49,29 +57,25 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 
-			TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-					transMode, days, months, factSetObj, range);
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
+					transMode, days, months, factSetObj, range);*/			
+			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,AMLConstants.CR,days,months,hours);
+			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
+			
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getMaxAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue((dto.getMaxAmount()));
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in MaxCashDepositFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::MaxCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::MaxCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

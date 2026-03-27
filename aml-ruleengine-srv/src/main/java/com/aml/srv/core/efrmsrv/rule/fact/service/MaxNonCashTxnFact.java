@@ -8,13 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
@@ -27,9 +29,13 @@ public class MaxNonCashTxnFact implements FactInterface{
 	@Autowired
 	TransactionService transactionService;
 	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+
+	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
-
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::MaxNonCashTxnFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
@@ -49,30 +55,38 @@ public class MaxNonCashTxnFact implements FactInterface{
 			Integer months = factSetObj.getMonths();
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
+			String condition = factSetObj.getCondition();
 
-			TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW,
-					transMode, days, months, factSetObj, range);
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			
+			TransactionDetailsDTO dto = null;
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW,
+					transMode, days, months, factSetObj, range);*/
+			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getMaxAmount() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue((dto.getMaxAmount()));
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in MaxNonCashTxnFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::MaxNonCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::MaxNonCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

@@ -20,6 +20,9 @@ public class AMLConstants {
 	public static final String YES = "YES";
 	public static final String DEPOSIT = "D";
 	public static final String WITHDRAW = "W";
+	
+	public static final String DR = "DR";
+	public static final String CR = "CR";
 
 	public static final String SUM = "SUM";
 	public static final String COUNT = "COUNT";

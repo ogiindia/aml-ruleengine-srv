@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aml.srv.core.efrmsrv.entity.TransactionDetailsEntity;
+import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 import io.micrometer.common.util.StringUtils;
@@ -20,12 +20,11 @@ public class ReportTableUpsertService {
 	public static final Logger LOGGER = LoggerFactory.getLogger(ReportTableUpsertService.class);
 
 	@Transactional
-	public void toUpdateInsertReportTbl(TransactionDetailsEntity transactionEntity, String alertCategory,
+	public void toUpdateInsertReportTbl(TransactionParquteMppaing transactionEntity, String alertCategory,
 			String alertName) {
 		// TODO Auto-generated method stub
 		if (StringUtils.isNotBlank(alertCategory)) {
 			switch (alertCategory) {
-
 			case RuleWhizConstants.NGO:
 			case RuleWhizConstants.NTR:
 				ntrUpsert();
@@ -46,22 +45,42 @@ public class ReportTableUpsertService {
 	}
 
 	public void cbwtrUpsert() {
-		// TODO Auto-generated method stub
+		try {
+
+		} catch (Exception e) {
+			LOGGER.error("Exception found in ReportTableUpsertService@cbwtrUpsert : {}", e);
+		} finally {
+		}
 
 	}
 
 	public void cftrUpsert() {
-		// TODO Auto-generated method stub
+		try {
+
+		} catch (Exception e) {
+			LOGGER.error("Exception found in ReportTableUpsertService@cftrUpsert : {}", e);
+		} finally {
+		}
 
 	}
 
 	public void ctrUpsert() {
-		// TODO Auto-generated method stub
+		try {
+
+		} catch (Exception e) {
+			LOGGER.error("Exception found in ReportTableUpsertService@ctrUpsert : {}", e);
+		} finally {
+		}
 
 	}
 
 	public void ntrUpsert() {
-		// TODO Auto-generated method stub
+		try {
+
+		} catch (Exception e) {
+			LOGGER.error("Exception found in ReportTableUpsertService@processOfReq : {}", e);
+		} finally {
+		}
 
 	}
 

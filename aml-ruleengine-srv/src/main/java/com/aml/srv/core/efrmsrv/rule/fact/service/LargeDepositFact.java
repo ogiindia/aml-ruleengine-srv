@@ -8,13 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
+import com.aml.srv.core.efrmsrv.repo.SummarizationDataImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
 @Service("LARGE_DEPOSITService")
@@ -26,6 +28,9 @@ public class LargeDepositFact implements FactInterface{
 	@Autowired
 	TransactionService transactionService;
 	
+	@Autowired
+	SummarizationDataImpl summarizationDataImpl;
+	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 
@@ -34,6 +39,7 @@ public class LargeDepositFact implements FactInterface{
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		List<SummarizationDataEntity> sumLstObj =  null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -49,16 +55,18 @@ public class LargeDepositFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 
-			TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,AMLConstants.DEPOSIT,
-					transMode, days, months, factSetObj, range);
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,AMLConstants.DEPOSIT,
+					transMode, days, months, factSetObj, range); */
+			
+			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId, null,days,months,hours);
+			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
+
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getMaxAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue((dto.getMaxAmount()));
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
@@ -71,7 +79,5 @@ public class LargeDepositFact implements FactInterface{
 					requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

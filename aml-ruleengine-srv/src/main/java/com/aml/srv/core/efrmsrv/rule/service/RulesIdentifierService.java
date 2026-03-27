@@ -16,12 +16,14 @@ import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.AccountStatusRepositryImpl;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsRepoImpl;
-import com.aml.srv.core.efrmsrv.rule.fact.service.FactInterface;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
+import com.aml.srv.core.efrmsrv.rule.intr.SchemaInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.rule.process.response.RuleResponseVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.RuleResposeDetailsVO;
+import com.aml.srv.core.efrmsrv.ruleengine.Schema;
 
 /**
  * 
@@ -74,44 +76,49 @@ public class RulesIdentifierService {
 					ruleRequestVoObParam.toString());
 			if (ruleRequestVoObParam != null) {
 				ruleResponseVoObj = new RuleResponseVo();
-
 				ruleRespDtlObj = new ArrayList<RuleResposeDetailsVO>();
 				computedFacts = new ArrayList<ComputedFactsVO>();
 				ruleResposeDetailsVO = new RuleResposeDetailsVO();
-				for (Factset fact : ruleRequestVoObParam.getFactSet()) {
-					computedFactsVO = new ComputedFactsVO();
-					if (StringUtils.isNotBlank(fact.getFact())) {
+				
+				if(ruleRequestVoObParam.getFactSet()!=null) {
+					// Fact wise rule
+					for (Factset fact : ruleRequestVoObParam.getFactSet()) {
+						computedFactsVO = new ComputedFactsVO();
+						if (StringUtils.isNotBlank(fact.getFact())) {
 
-						FactInterface factInterface = classLoaderUtil.getBean(fact.getFact() + "Service",
-								FactInterface.class);
-						computedFactsVO = factInterface.getFactExecutor(ruleRequestVoObParam, fact, computedFacts);
-						computedFactsVO.setFact(fact.getFact());
-						computedFactsVO.setFieldTag(fact.getField());
-						
-						
-						computedFacts.add(computedFactsVO);
-					} else {
-						LOGGER.info("RuleRequestVo object is NULL recevie");
+							FactInterface factInterface = classLoaderUtil.getBean(fact.getFact() + "Service", FactInterface.class);
+							computedFactsVO = factInterface.getFactExecutor(ruleRequestVoObParam, fact, computedFacts);
+							computedFactsVO.setFact(fact.getFact());
+							computedFactsVO.setFieldTag(fact.getField());
+							computedFacts.add(computedFactsVO);
+						} else {
+							LOGGER.info("RuleRequestVo object is NULL recevie");
+						}
 					}
-				}
+				} else {
+					/***Schema Base****/
+					if(ruleRequestVoObParam.getSchema()!=null) {
+						for (Schema schemaobj : ruleRequestVoObParam.getSchema()) {
+							SchemaInterface schemaInterface = classLoaderUtil.getBean("SIMPLERULESService", SchemaInterface.class);
+							computedFactsVO = schemaInterface.getScheamExecutor(ruleRequestVoObParam, schemaobj, computedFacts);
+							computedFacts.add(computedFactsVO);
+						}
+					}
+				}	
 			}
 
 			if (StringUtils.isNotBlank(ruleRequestVoObParam.getCustomerId())) {
-				CustomerDetailsEntity customerEnityObj = customerDetailsRepoImpl
-						.getCustomerDetailsByCustId(ruleRequestVoObParam.getCustomerId());
+				CustomerDetailsEntity customerEnityObj = customerDetailsRepoImpl.getCustomerDetailsByCustId(ruleRequestVoObParam.getCustomerId());
 				if (customerEnityObj != null) {
 					ruleResposeDetailsVO.setAccountType(customerEnityObj.getCustomerType());
 				}
 			}
 			if (StringUtils.isNotBlank(ruleRequestVoObParam.getAccountNo())) {
 				AccountDetailsEntity customerEnityObj = accountDetailsService.getAccountDetails(ruleRequestVoObParam.getReqId(),null, ruleRequestVoObParam.getAccountNo());
-						
 				if (customerEnityObj != null) {
 					ruleResposeDetailsVO.setAccountType(customerEnityObj.getAccountType());
 				}
 			}
-			
-			
 			
 			if (StringUtils.isNotBlank(ruleRequestVoObParam.getAccountNo())) {
 				AccountStatusEntity accountStatusEntityObj = accountStatusRepositryImpl
@@ -119,7 +126,6 @@ public class RulesIdentifierService {
 				if (accountStatusEntityObj != null) {
 					ruleResposeDetailsVO.setAccountStatus(accountStatusEntityObj.getStatus());
 				}
-
 			}
 			ruleResposeDetailsVO.setComputedFacts(computedFacts);
 			ruleResposeDetailsVO.setReqId(ruleRequestVoObParam.getReqId());

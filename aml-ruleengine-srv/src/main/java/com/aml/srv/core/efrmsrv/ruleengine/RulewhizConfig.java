@@ -37,12 +37,13 @@ public class RulewhizConfig {
 
 	public void loadRulesConfig() {
 		LOGGER.info("Loading Rules.....");
-
 		ruleEntity = normalizedTblImpl.getActiveRules();
-
 		LOGGER.info("[{}] - Rules are Loaded.", ruleEntity.size());
 	}
 
+	/**
+	 * 
+	 */
 	public void generateMVEL() {
 		for (NormalizedTblEntity entity : ruleEntity) {
 			LOGGER.info("Rule Details are ID: [{}] - Rule Name : [{}] - Payload : [{}]", entity.getId(),
@@ -54,8 +55,12 @@ public class RulewhizConfig {
 		}
 	}
 
+	/**
+	 * 
+	 * @param payload
+	 * @return
+	 */
 	public String processMVEL(String payload) {
-
 		StringBuilder sb = new StringBuilder();
 		AMLRule rulepayload = new Gson().fromJson(payload, AMLRule.class);
 		int schemaCounter = 0;
@@ -126,8 +131,13 @@ public class RulewhizConfig {
 		return sb.toString().trim();
 	}
 
-	Object toCheckKeyName(String keyName, Object valuee) {
-
+	/**
+	 * 
+	 * @param keyName
+	 * @param valuee
+	 * @return
+	 */
+	private Object toCheckKeyName(String keyName, Object valuee) {
 		if (isValidNumber(valuee)) {
 			return valuee;
 		} else {
@@ -183,5 +193,4 @@ public class RulewhizConfig {
 
 		return retVal;
 	}
-
 }

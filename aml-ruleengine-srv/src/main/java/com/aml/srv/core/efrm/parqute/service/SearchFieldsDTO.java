@@ -1,5 +1,15 @@
 package com.aml.srv.core.efrm.parqute.service;
 
-public record SearchFieldsDTO(String customerId, String accountNo, String startDate, String endDate, String transId, String srchStr) {
+import java.util.Map;
+
+public record SearchFieldsDTO(String customerId, String accountNo, String startDate,
+		String endDate, 
+		String transId, 
+		String minamount,
+		String maxamount,
+		String withdraDeposit,
+		String transtype,
+		String transmode,
+		Map<String, String> conditionLst, String transDate, String foreignExchInclaue) {
 
 }

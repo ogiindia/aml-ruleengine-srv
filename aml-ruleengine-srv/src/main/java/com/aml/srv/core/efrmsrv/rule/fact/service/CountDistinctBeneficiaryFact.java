@@ -8,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
-import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -17,22 +19,27 @@ import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 @Service("COUNT_DISTINCT_BENEFICIARIESService")
-public class CountDistinctBeneficiaryFact implements FactInterface{
+public class CountDistinctBeneficiaryFact implements FactInterface {
 
-
-private Logger LOGGER = LoggerFactory.getLogger(CountDistinctBeneficiaryFact.class);
+	private Logger LOGGER = LoggerFactory.getLogger(CountDistinctBeneficiaryFact.class);
+	/*
+	 * @Autowired TransactionService transactionService;
+	 */
 	
 	@Autowired
-	TransactionService transactionService;
-	
+	TransactionServiceForParqute transactionServiceForParqute;
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::CountDistinctBeneficiaryFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
+		TransactionDetailsDTO dto = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -40,37 +47,48 @@ private Logger LOGGER = LoggerFactory.getLogger(CountDistinctBeneficiaryFact.cla
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
 			Integer months = factSetObj.getMonths();
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
+			String condition = factSetObj.getCondition();
+			
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode("ATM");
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setForeignCountryCode(false);
+			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
 
-			TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,AMLConstants.WITHDRAW,
-					transMode, days, months, factSetObj, range);
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,
+					AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range);*/
+			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getCountcounterpartyAccountNo() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountcounterpartyAccountNo()));
-			}
-			else
-			{
+			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in CountDistinctBeneficiaryFact@getFactExecutor : {}", e);
 		} finally {
-
+			dto = null; transSrvSrchFilevoObj = null;
 			LOGGER.info("REQID : [{}]::::::::::::CountDistinctBeneficiaryFact@getFactExecutor (EXIT) End::::::::::\n\n",
 					requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }

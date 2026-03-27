@@ -11,59 +11,71 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrmsrv.entity.AccountDetailsEntity;
+import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
+import com.aml.srv.core.efrm.parqute.service.ParquetService;
+import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
+import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
-
 @Service("INWARD_FOREIGN_REMITTANCEService")
-public class InwardForeignRemittanceFact implements FactInterface{
+public class InwardForeignRemittanceFact implements FactInterface {
 
-    private final AMLConstants AMLConstants;
+	private final AMLConstants AMLConstants;
 
+	private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 
-private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
-	
 	@Autowired
 	TransactionService transactionService;
-	
+
 	@Autowired
 	AccountDetailsService accountDetailsService;
-	
+
 	@Autowired
 	FS_FactConditionRepoImpl fS_FactConditionRepoImpl;
 
 	@Autowired
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
-	
+
 	@Autowired
 	CustomerDetailsService customerDetailsService;
 
-    InwardForeignRemittanceFact(AMLConstants AMLConstants) {
-        this.AMLConstants = AMLConstants;
-    }
-	
+	@Autowired
+	ParquetService parquetService;
+
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+
+	InwardForeignRemittanceFact(AMLConstants AMLConstants) {
+		this.AMLConstants = AMLConstants;
+	}
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::InwardForeignRemittanceFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
+		List<SummarizationDataEntity> sumLstObj =  null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -71,7 +83,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
@@ -79,44 +91,71 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
+			
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			
+			
 			computedFactsVOObj.setValue(new BigDecimal(0));
-			TransactionDetailsDTO dto =null;
-
+			TransactionDetailsDTO dto = null;
+			AccountDetailsParquteEntity acctDetails = null;
 			if (condition != null) {
 				if (condition.equals("NEW_ACCOUNT")) {
-					AccountDetailsEntity acctDetails = accountDetailsService
-							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
+					// AccountDetailsEntity acctDetails =
+					// accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
+
+					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
+							null, null, null,null,null);
+					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto, null);
+					if (lstAc != null && lstAc.size() > 0) {
+						acctDetails = lstAc.get(0);
+					}
+
 					if (acctDetails != null && acctDetails.getAccountOpenedDate() != null) {
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+						String format = transactionServiceForParqute.getTransactionDateFormat();
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 						LocalDate openDate = LocalDate.parse(acctDetails.getAccountOpenedDate(), formatter);
 						LocalDate currentDate = LocalDate.now();
-						System.out.println(openDate); // Output: 2025-05-20
+						LOGGER.info("Acount Opendate : [{}]",openDate); // Output: 2025-05-20
 
 						long daysBetween = ChronoUnit.DAYS.between(openDate, currentDate);
 						if (days != null && days >= daysBetween) {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
 							computedFactsVOObj.setAccountStatus("NEW");
 							computedFactsVOObj.setStrType("num");
-							 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-										transMode,true, days, months, factSetObj, range,false);
-								if (dto != null && dto.getTxnAmount() != null) {
-									computedFactsVOObj.setValue((dto.getTxnAmount()));
-								}
-								else
-								{
-									computedFactsVOObj.setFact(factName);
-									computedFactsVOObj.setValue(new BigDecimal(0));
-								}
+							
+							transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
+							dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+							
+							/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+									AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+							*/
+							if (dto != null && dto.getTxnAmount() != null) {
+								computedFactsVOObj.setValue((dto.getTxnAmount()));
+							} else {
+								computedFactsVOObj.setFact(factName);
+								computedFactsVOObj.setValue(new BigDecimal(0));
+							}
 						} else if (months != null) {
 							int totalDays = months * 30;
 							if (totalDays >= daysBetween) {
 								computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
 								computedFactsVOObj.setAccountStatus("NEW");
-								 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-											transMode,true, days, months, factSetObj, range,false);
-									if (dto != null && dto.getTxnAmount() != null) {
-										computedFactsVOObj.setValue((dto.getTxnAmount()));
-									}
+								dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+								if (dto != null && dto.getTxnAmount() != null) {
+									computedFactsVOObj.setValue((dto.getTxnAmount()));
+								}
 							}
 						} else {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
@@ -127,8 +166,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 						computedFactsVOObj.setAccountStatus("OLD");
 					}
 
-				}
-				else if (condition.equals("LOW-CASH-PROFILE")) {
+				} else if (condition.equals("LOW-CASH-PROFILE")) {
 
 					String profile = null;
 
@@ -140,7 +178,8 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 								.getCondititonAttributes(String.valueOf(conditionEntity.getId()),
 										requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
-							CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(),custId);
+							CustomerDetailsEntity custDetails = customerDetailsService
+									.getCustomerDetails(requVoObjParam.getReqId(), custId);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
 									if (gs.getAttributes().equals(custDetails.getCustomerCategory())) {
@@ -153,20 +192,18 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 					}
 
 					if (profile != null) {
-						 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-									transMode,true, days, months, factSetObj, range,false);
-							if (dto != null && dto.getTxnAmount() != null) {
+						dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+								AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+						if (dto != null && dto.getTxnAmount() != null) {
 
-								computedFactsVOObj.setFact(factName);
-								computedFactsVOObj.setValue((dto.getTxnAmount()));
-								computedFactsVOObj.setStrValue(profile);
-							}
-							else
-							{
-								computedFactsVOObj.setFact(factName);
-								computedFactsVOObj.setValue(new BigDecimal(0));
-							}
-						
+							computedFactsVOObj.setFact(factName);
+							computedFactsVOObj.setValue((dto.getTxnAmount()));
+							computedFactsVOObj.setStrValue(profile);
+						} else {
+							computedFactsVOObj.setFact(factName);
+							computedFactsVOObj.setValue(new BigDecimal(0));
+						}
+
 					} else {
 
 						computedFactsVOObj.setFact(factName);
@@ -175,21 +212,17 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 					}
 				}
 
-			}
-			else
-			{
-			 dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-					transMode,true, days, months, factSetObj, range,false);
-			if (dto != null && dto.getTxnAmount() != null) {
+			} else {
+				dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, AMLConstants.DEPOSIT,
+						transMode, true, days, months, factSetObj, range, false);
+				if (dto != null && dto.getTxnAmount() != null) {
 
-				computedFactsVOObj.setFact(factName);
-				computedFactsVOObj.setValue((dto.getTxnAmount()));
-			}
-			else
-			{
-				computedFactsVOObj.setFact(factName);
-				computedFactsVOObj.setValue(new BigDecimal(0));
-			}
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setValue((dto.getTxnAmount()));
+				} else {
+					computedFactsVOObj.setFact(factName);
+					computedFactsVOObj.setValue(new BigDecimal(0));
+				}
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in InwardForeignRemittanceFact@getFactExecutor : {}", e);

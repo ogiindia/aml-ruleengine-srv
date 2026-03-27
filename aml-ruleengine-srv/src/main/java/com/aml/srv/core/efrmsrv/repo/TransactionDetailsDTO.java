@@ -5,27 +5,27 @@ import java.math.BigDecimal;
 public class TransactionDetailsDTO {
 
 	public BigDecimal sumAmount = null;
-	
+
 	public BigDecimal minAmount = null;
-	
+
 	public BigDecimal maxAmount = null;
-	
+
 	public BigDecimal txnAmount = null;
-	
+
 	public Long countAmount = null;
-	
+
 	public Long COuntDistcounterpartyAccountNo = null;
-	
+
 	public Long CountcounterpartyAccountNo = null;
-	
-	public Double avgAmount=null;
-	
-	public String counterContryCode=null;
-	
-	private String transDate=null;
-	
-	private String counterLocation=null;
-	
+
+	public Double avgAmount = null;
+
+	public String counterContryCode = null;
+
+	private String transDate = null;
+
+	private String counterLocation = null;
+
 	public Long counterAccountNo = null;
 
 	public BigDecimal getSumAmount() {
@@ -123,7 +123,5 @@ public class TransactionDetailsDTO {
 	public void setCounterAccountNo(Long counterAccountNo) {
 		this.counterAccountNo = counterAccountNo;
 	}
-	
-	
-	
+
 }

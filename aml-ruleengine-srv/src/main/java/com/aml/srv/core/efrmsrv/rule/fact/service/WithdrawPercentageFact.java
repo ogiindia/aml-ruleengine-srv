@@ -8,8 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
+import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
@@ -30,6 +33,9 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	@Autowired
 	ImmediateWithdrawFact immediateWithdrawFact;
 	
+	@Autowired
+	TransactionServiceForParqute transactionServiceForParqute;
+	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 
@@ -38,6 +44,8 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		TransactionDetailsDTO dto = null;
+		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -53,51 +61,60 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
+			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
+			transSrvSrchFilevoObj.setAccNo(accNo);
+			transSrvSrchFilevoObj.setConditionName(condition);
+			transSrvSrchFilevoObj.setCustId(custId);
+			transSrvSrchFilevoObj.setDays(days);
+			transSrvSrchFilevoObj.setFactName(factName);
+			transSrvSrchFilevoObj.setHours(hours);
+			transSrvSrchFilevoObj.setMonths(months);
+			transSrvSrchFilevoObj.setRange(range);
+			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransType(transType);
+			transSrvSrchFilevoObj.setTxnNo(txnId);
+			transSrvSrchFilevoObj.setForeignCountryCode(false);
 			
 			computedFactsVOObj.setStrType("num");
 			if (condition != null) {
 				if (condition.equals("QUARTERLY_PERCENTAGE")) {
-
-
-					TransactionDetailsDTO threeMonthsumofamount = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,null,
-							null, null, 3, factSetObj, range,true);
+					TransactionDetailsDTO threeMonthsumofamount  = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+					//TransactionDetailsDTO threeMonthsumofamount = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,null,null, null, 3, factSetObj, range,true);
 					
-					TransactionDetailsDTO threeMonthsumOfwithdraw = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW,
-							transMode, days, months, factSetObj, range,true);
-					
-					if (threeMonthsumofamount != null && threeMonthsumofamount.getSumAmount() != null && threeMonthsumOfwithdraw!=null && threeMonthsumOfwithdraw.getSumAmount()!=null) {
+					transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
+					//TransactionDetailsDTO threeMonthsumOfwithdraw = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range,true);
+					TransactionDetailsDTO threeMonthsumOfwithdraw = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+					if (threeMonthsumofamount != null && threeMonthsumofamount.getSumAmount() != null
+							&& threeMonthsumOfwithdraw != null && threeMonthsumOfwithdraw.getSumAmount() != null) {
 						Double withdrawalAmount = threeMonthsumOfwithdraw.getSumAmount().doubleValue();
-				        Double totalAmount = threeMonthsumofamount.getSumAmount().doubleValue();
+						Double totalAmount = threeMonthsumofamount.getSumAmount().doubleValue();
 
-				        double percentage = (withdrawalAmount / totalAmount) * 100;
-				        computedFactsVOObj.setFact(factName);
+						double percentage = (withdrawalAmount / totalAmount) * 100;
+						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setValue(new BigDecimal(percentage));
-					}
-					else
-					{
+					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setValue(new BigDecimal(0));
 					}
 					
 
-				}
-				else if (condition.equals("IMMEDIATE_WITHDRAWAL_OTHER_ATM")) {
-
-
+				} else if (condition.equals("IMMEDIATE_WITHDRAWAL_OTHER_ATM")) {
 					if (computedFacts != null && computedFacts.size() >= 1) {
 						computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam,
 								factSetObj, computedFacts);
 					}
-					
-
-				}
-				else if (condition.equals("IMMEDIATE_WITHDRAWAL_ATM_OR_OTHER")) {
-
+				} else if (condition.equals("IMMEDIATE_WITHDRAWAL_ATM_OR_OTHER")) {
 					if (computedFacts != null && computedFacts.size() >= 1) {
 						computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam, factSetObj,
 								computedFacts);
 					}
 				} else if (condition.equals("IMMEDIATE_DIFFERENT_LOCATIONS")) {
+					if (computedFacts != null && computedFacts.size() >= 1) {
+						computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam, factSetObj,
+								computedFacts);
+					}
+
+				} else if (condition.equals("IMMEDIATE_WITHDRAWAL")) {
 
 					if (computedFacts != null && computedFacts.size() >= 1) {
 						computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam, factSetObj,
@@ -105,24 +122,14 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 					}
 
 				}
-				 else if (condition.equals("IMMEDIATE_WITHDRAWAL")) {
 
-						if (computedFacts != null && computedFacts.size() >= 1) {
-							computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam, factSetObj,
-									computedFacts);
-						}
-
-					}
-				
-
-			}
-			else
-			{
+			} else {
 				if (computedFacts != null && computedFacts.size() >= 1) {
-					computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam,
-							factSetObj, computedFacts);
+					computedFactsVOObj = immediateWithdrawFact.getFactExecutor(requVoObjParam, factSetObj,
+							computedFacts);
 				}
 				
+			}
 		/*	TransactionDetailsDTO sumofamount = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,null,
 					null, days, months, factSetObj, range);
 			
@@ -145,19 +152,12 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			}
 			
 			*/
-			}
-
-			
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in WithdrawPercentageFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::WithdrawPercentageFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::WithdrawPercentageFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
 
 }
