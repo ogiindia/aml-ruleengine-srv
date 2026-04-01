@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
-import com.aml.srv.core.efrmsrv.repo.TransactionService;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
@@ -26,8 +25,9 @@ import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 @Service("CUSTOMER_PROFILEService")
 public class CustomerProfileFact implements FactInterface {
 
-	@Autowired
-	TransactionService transactionService;
+	/*
+	 * @Autowired TransactionService transactionService;
+	 */
 
 	@Autowired
 	CustomerDetailsService customerDetailsService;
@@ -39,7 +39,7 @@ public class CustomerProfileFact implements FactInterface {
 	FS_FactConditionAttributeRepoImpl fS_FactConditionAttributeRepoImpl;
 
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 	
 	private Logger LOGGER = LoggerFactory.getLogger(CustomerProfileFact.class);
 
@@ -80,7 +80,7 @@ public class CustomerProfileFact implements FactInterface {
 								.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
 							//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(), custId);
-							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
+							CustomerDetailsParquetEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
 									if (StringUtils.isNotBlank(custDetails.getCustomercategory()) 
@@ -131,7 +131,7 @@ public class CustomerProfileFact implements FactInterface {
 							 * CustomerDetailsEntity custDetails = customerDetailsService
 							 * .getCustomerDetails(requVoObjParam.getReqId(), custId);
 							 */
-							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
+							CustomerDetailsParquetEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
 									profile = "RealEstateAgent";
@@ -165,7 +165,7 @@ public class CustomerProfileFact implements FactInterface {
 							 * CustomerDetailsEntity custDetails = customerDetailsService
 							 * .getCustomerDetails(requVoObjParam.getReqId(), custId);
 							 */
-							CustomerDetailsParquteEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
+							CustomerDetailsParquetEntity custDetails =  customerServiceForParqute.getCustParqueEntity(custId,null);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
 									if (gs.getAttributes().equals(custDetails.getCustomercategory())) {

@@ -1,8 +1,8 @@
-package com.aml.srv.core.efrm.parqute.entity;
+package com.aml.srv.core.efrm.parquet.entity;
 
 import jakarta.persistence.Column;
 
-public class CustomerDetailsParquteEntity {
+public class CustomerDetailsParquetEntity {
 
 	@Column(name = "CUSTOMERID")
 	private String customerid;

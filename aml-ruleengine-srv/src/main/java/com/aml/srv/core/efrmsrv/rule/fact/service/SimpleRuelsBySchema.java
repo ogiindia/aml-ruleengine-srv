@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.entity.TransactionParquetMppaing;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.rule.intr.SchemaInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;

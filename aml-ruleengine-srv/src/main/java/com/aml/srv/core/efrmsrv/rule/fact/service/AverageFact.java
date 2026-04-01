@@ -40,6 +40,7 @@ private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);
 		LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (ENTRY) Called::::::::::",requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		TransactionDetailsDTO dto = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -57,10 +58,9 @@ private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);
 
 			//TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,transMode, days, months, factSetObj, range,hours);
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,null,days,months,hours);
-			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
+			dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getAvgAmount() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));
 			} else {

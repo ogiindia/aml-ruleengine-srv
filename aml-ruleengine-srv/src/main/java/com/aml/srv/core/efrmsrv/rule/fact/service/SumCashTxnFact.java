@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
@@ -41,7 +41,7 @@ public class SumCashTxnFact implements FactInterface {
 	CustomerDetailsService customerDetailsService;
 	
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
@@ -99,7 +99,7 @@ public class SumCashTxnFact implements FactInterface {
 						List<FS_FactConditionAttributeEntity> conditionAttribute = fS_FactConditionAttributeRepoImpl.getCondititonAttributes(String.valueOf(conditionEntity.getId()), requVoObjParam.getReqId());
 						if (conditionAttribute != null && conditionAttribute.size() > 0) {
 							//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(requVoObjParam.getReqId(), custId);
-							CustomerDetailsParquteEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
+							CustomerDetailsParquetEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
 							if (custDetails != null) {
 								for (FS_FactConditionAttributeEntity gs : conditionAttribute) {
 									if (gs.getAttributes().equals(custDetails.getCustomercategory())) {

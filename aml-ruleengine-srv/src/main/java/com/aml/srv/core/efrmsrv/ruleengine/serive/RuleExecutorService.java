@@ -19,7 +19,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
+import com.aml.srv.core.efrm.parquet.entity.TransactionParquetMppaing;
 import com.aml.srv.core.efrmsrv.entity.NormalizedTblEntity;
 import com.aml.srv.core.efrmsrv.ruleengine.RulewhizConfig;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
@@ -99,7 +99,7 @@ public class RuleExecutorService {
 					/*myService.processEvent(new Gson().fromJson(record.value(), TransactionDetailsEntity.class),
 							RuleWhizConstants.KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), ruleEntity);
 					*/
-					myService.processEvent(new Gson().fromJson(record.value(), TransactionParquteMppaing.class),
+					myService.processEvent(new Gson().fromJson(record.value(), TransactionParquetMppaing.class),
 							RuleWhizConstants.KAFKA_PUB_TOPIC_GRP + appConfig.ruleEntity.get(groupId).getId(), ruleEntity);
 					if (acknowledgment != null) {
 						acknowledgment.acknowledge();

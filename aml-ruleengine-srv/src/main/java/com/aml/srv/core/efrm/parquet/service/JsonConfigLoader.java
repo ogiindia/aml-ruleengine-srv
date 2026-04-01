@@ -1,4 +1,4 @@
-package com.aml.srv.core.efrm.parqute.service;
+package com.aml.srv.core.efrm.parquet.service;
 
 import java.util.List;
 

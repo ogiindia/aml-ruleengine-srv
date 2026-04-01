@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
@@ -34,7 +34,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	CustomerMatchFact customerMatchFact;
 	
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
@@ -54,7 +54,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 		
 			//String panStatus = customerDetailsService.getPanStatus(reqId, accNo,custId);
 			String panStatus = null;
-			CustomerDetailsParquteEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
+			CustomerDetailsParquetEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
 			if(StringUtils.isNotBlank(custDetails.getPanno())) {
 				panStatus = "NON_NIL";
 				LOGGER.info("REQID : [{}] - retnVal : [{}]", reqId, panStatus);

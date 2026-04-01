@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;

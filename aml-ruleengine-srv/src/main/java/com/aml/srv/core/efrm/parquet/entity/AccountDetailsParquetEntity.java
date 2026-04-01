@@ -1,4 +1,4 @@
-package com.aml.srv.core.efrm.parqute.entity;
+package com.aml.srv.core.efrm.parquet.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import jakarta.persistence.Column;
 
 
-public class AccountDetailsParquteEntity implements Serializable {
+public class AccountDetailsParquetEntity implements Serializable {
 
     /**
 	 * 
@@ -26,7 +26,7 @@ public class AccountDetailsParquteEntity implements Serializable {
     private String branchcode;
     
     @Column(name = "ACCOUNTOPENEDDATE")
-    private String accountOpenedDate;
+    private String accountopeneddate;
 
     @Column(name = "ACCOUNTSTATUS")
     private String status;
@@ -217,14 +217,12 @@ public class AccountDetailsParquteEntity implements Serializable {
 		this.bankCode = bankCode;
 	}
 
-	
-
-	public String getAccountOpenedDate() {
-		return accountOpenedDate;
+	public String getAccountopeneddate() {
+		return accountopeneddate;
 	}
 
-	public void setAccountOpenedDate(String accountOpenedDate) {
-		this.accountOpenedDate = accountOpenedDate;
+	public void setAccountopeneddate(String accountopeneddate) {
+		this.accountopeneddate = accountopeneddate;
 	}
 
 	public String getModeOfOperation() {

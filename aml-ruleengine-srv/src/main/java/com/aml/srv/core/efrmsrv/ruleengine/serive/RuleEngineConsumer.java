@@ -12,9 +12,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrmsrv.entity.TransactionDetailsEntity;
+import com.aml.srv.core.efrm.parquet.entity.TransactionParquetMppaing;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
 import com.aml.srv.core.efrmsrv.kafka.repo.FinSecIndicatorVO;
 import com.aml.srv.core.efrmsrv.repo.TxnDetailsImpl;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
@@ -61,15 +60,12 @@ public class RuleEngineConsumer {
 				finSecIndicatorVOObj = new Gson().fromJson(msg, FinSecIndicatorVO.class);
 				if (finSecIndicatorVOObj != null) {
 					LOGGER.info("FinSecIndicatorVO conversion [IF]: {}", finSecIndicatorVOObj);
-					if (StringUtils.isNotBlank(finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady()) && finSecIndicatorVOObj
-							.getCsv2DuckDbImprtIsReady().equalsIgnoreCase(RuleWhizConstants.YES)) {
-						LOGGER.info("AMLFileImportConsumer Csv2DuckDbImprtIsReady [IF]: {}", finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady());
-						
+					if (finSecIndicatorVOObj.isFileCompletedStatus()) {
 						/**Get from Parqute**/
 						
-						List<TransactionParquteMppaing> tansParquMappLst = 	transactionServiceForParqute.getTransDetailsFromProperty(minusDays);
+						List<TransactionParquetMppaing> tansParquMappLst = 	transactionServiceForParqute.getTransDetailsFromProperty(minusDays);
 						if(tansParquMappLst!=null) {
-							for(TransactionParquteMppaing trasnDataEntity :tansParquMappLst) {
+							for(TransactionParquetMppaing trasnDataEntity :tansParquMappLst) {
 								LOGGER.debug("AMLRuleEngineConsumer - Transaction Batch ID  : [{}]", trasnDataEntity.getTransactionid());
 								//Record Publish kafka for Rule ENgine Dynamic Listener(Dynamic Listener In RuleExecutorService.java same Project)
 								ProducerRecord<String, String> record = new ProducerRecord<String, String>(
@@ -109,8 +105,8 @@ public class RuleEngineConsumer {
 						}
 						*/
 					} else {
-						LOGGER.info("AMLRuleEngineConsumer Csv2DuckDbImprtIsReady [ELSE]: {}",
-								finSecIndicatorVOObj.getCsv2DuckDbImprtIsReady());
+						LOGGER.info("AMLRuleEngineConsumer isFileCompletedStatus [ELSE]: {}",
+								finSecIndicatorVOObj.isFileCompletedStatus());
 					}
 				} else {
 					LOGGER.info("AMLRuleEngineConsumer conversion [ELSE]: {}", finSecIndicatorVOObj);

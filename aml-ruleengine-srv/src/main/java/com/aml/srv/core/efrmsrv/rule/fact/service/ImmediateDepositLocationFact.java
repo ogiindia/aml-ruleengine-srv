@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.service.ParquetService;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
 import com.aml.srv.core.efrmsrv.repo.SummarizationDataImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;

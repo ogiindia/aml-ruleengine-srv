@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
 import com.aml.srv.core.efrmsrv.entity.FS_FIUIndCriminalListEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_UAPAListEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_UNSCRListEntity;
@@ -50,7 +50,7 @@ public class CustomerMatchFact implements FactInterface {
 	ParquetService parquetService;
 	
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 
 	@Autowired
 	Soundex soundex;
@@ -86,7 +86,7 @@ public class CustomerMatchFact implements FactInterface {
 			String custName = null;
 			String country = null;
 			if (condition != null) {
-				CustomerDetailsParquteEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
+				CustomerDetailsParquetEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
 				if (condition.equals("UNSCR")) {
 					computedFactsVOObj.setStrType("str");
 					//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(reqId, custId);

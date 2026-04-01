@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.service.AccountServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.service.AccountServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
@@ -44,7 +44,7 @@ public class SumDebitCreditFact implements FactInterface {
 	AccountDetailsService accountDetailsService;
 
 	@Autowired
-	AccountServiceForParqute accountServiceForParqute;
+	AccountServiceForParquet accountServiceForParqute;
 	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;

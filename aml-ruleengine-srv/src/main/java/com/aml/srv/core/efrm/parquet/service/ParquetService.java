@@ -1,4 +1,4 @@
-package com.aml.srv.core.efrm.parqute.service;
+package com.aml.srv.core.efrm.parquet.service;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -69,17 +69,22 @@ public class ParquetService {
 			result = new ArrayList<>();
 			con = getDuckDbConn();
 			String slQry = null;
+			QueryWithCountDetailsRDTO qryObj = null;
 			if(srcField!=null) {
-				slQry = buildSelectQuery(shortName, srcField, parqutePathPar2);
+				//slQry = buildSelectQuery(shortName, srcField, parqutePathPar2);
+				qryObj = buildSelectQuery(shortName, srcField, parqutePathPar2);
+				if(qryObj!=null) {
+					slQry = qryObj.query();
+				}
 			} else {
 				slQry = buildSelectQuery(shortName, parqutePathPar2);
 			}
 			stmt = con.prepareStatement(slQry);
-			stmt.execute("PRAGMA threads=8");
-			stmt.execute("PRAGMA enable_object_cache=true");
+			//stmt.execute("PRAGMA threads=8");
+			//stmt.execute("PRAGMA enable_object_cache=true");
 			rs = stmt.executeQuery();
 
-			if (!rs.next()) {
+			if (rs==null || !rs.next()) {
 			    LOGGER.warn("No data found");
 			    return Collections.emptyList(); // never return null
 			}
@@ -139,22 +144,26 @@ public class ParquetService {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ResultSetMetaData meta = null;
-		List<T> result = null;
-		
+		List<T> result = null;QueryWithCountDetailsRDTO quryObj = null;
+		Integer conditionCOunt =0;
 		try {
 			result = new ArrayList<>();
 			con = getDuckDbConn();
 			String slQry = null;
-			if(srcField!=null) {
-				slQry = buildSelectQuerySimpleRule(shortName, srcField, parqutePathPar2);
+			if (srcField != null) {
+				quryObj = buildSelectQuerySimpleRule(shortName, srcField, parqutePathPar2);
+				if (quryObj != null) {
+					slQry = quryObj.query();
+					conditionCOunt = quryObj.conditioncount();
+				}
 			} else {
 				slQry = buildSelectQuery(shortName, parqutePathPar2);
 			}
 			stmt = con.prepareStatement(slQry);
-			stmt.execute("PRAGMA threads=8");
-			stmt.execute("PRAGMA enable_object_cache=true");
-			
-			for (int i = 0; i < srcField.params().size(); i++) {
+			//stmt.execute("PRAGMA threads=8");
+			//stmt.execute("PRAGMA enable_object_cache=true");
+			LOGGER.info(" srcField.params() : count : {} - conditionCOunt : [{}]",  srcField.params().size(), conditionCOunt);
+			for (int i = 0; i < conditionCOunt; i++) {
 			    Object p = srcField.params().get(i);
 			    stmt.setObject(i + 1, p);
 			}
@@ -213,7 +222,7 @@ public class ParquetService {
 	 * @param col
 	 * @return
 	 */
-	private String toCamel(String col) {
+	public String toCamel(String col) {
 	    // SIMPLE example: ACCOUNT_NO -> accountNo
 	    String lower = col.toLowerCase();          // account_no
 	    String[] parts = lower.split("_");
@@ -257,8 +266,10 @@ public class ParquetService {
 		return trancustFldDTOObj;
 	}
 	
-	public String buildSelectQuerySimpleRule(String shortName, SerarchFieldsSimpleRuleDTO srcField, String parqutePathPart2) {
+	public QueryWithCountDetailsRDTO buildSelectQuerySimpleRule(String shortName, SerarchFieldsSimpleRuleDTO srcField, String parqutePathPart2) {
+		QueryWithCountDetailsRDTO qryObj = null;
 		String condition =null;List<ColumnMapping> columnMappingLst = null;
+		Integer condtitonCOunt =0;
 		try {
 			if (shortName == null || shortName.trim().isEmpty()) {
 				LOGGER.error("Invalid shortName");
@@ -295,6 +306,7 @@ public class ParquetService {
 			}
 			
 			if (!srcField.conditionLst().isEmpty()) {
+				condtitonCOunt = srcField.conditionLst().size();
 				condition = " WHERE " + String.join(" AND ", srcField.conditionLst());
 			}
 		
@@ -311,11 +323,13 @@ public class ParquetService {
 				parqutePathPart2 = "*/*/*";
 			} 
 			
-			String query = selectQuery + " FROM read_parquet('" + parquetPath + parqutePathPart2 + "/*.parquet' , union_by_name=true)";
+			String query = selectQuery + " FROM read_parquet('" + parquetPath + parqutePathPart2 + "/*.parquet' , union_by_name=true) " + condition;
 			
-			LOGGER.debug("Generated query for shortName [{}] : [{}]", shortName, query);
+			qryObj =  new QueryWithCountDetailsRDTO(query, condtitonCOunt);
+			
+			LOGGER.debug("SIMPLE RULEs - Generated query for shortName [{}] : [{}]", shortName, query);
 
-			return query;
+			return qryObj;
 			
 		} catch (Exception e) {
 			return null;
@@ -329,8 +343,8 @@ public class ParquetService {
 	 * @param shortName
 	 * @return Select Query
 	 */
-	public String buildSelectQuery(String shortName, SearchFieldsDTO srcField, String parqutePathPart2) {
-
+	public QueryWithCountDetailsRDTO buildSelectQuery(String shortName, SearchFieldsDTO srcField, String parqutePathPart2) {
+		QueryWithCountDetailsRDTO qryObj = null;
 		try {
 
 			if (shortName == null || shortName.trim().isEmpty()) {
@@ -384,15 +398,17 @@ public class ParquetService {
 						switch (col.getTo().toLowerCase()) {
 						case "customerid":
 							value = srcField.customerId();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#customerid#", "'" + value.trim() + "'");
 								isValid = true;
+							} else {
+								
 							}
 							break;
 
 						case "accountno":
 							value = srcField.accountNo();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#accountno#", "'" + value.trim() + "'");
 								isValid = true;
 							}
@@ -400,22 +416,27 @@ public class ParquetService {
 
 						case "transactionid":
 							value = srcField.transId();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#transactionid#", "'" + value.trim() + "'");
 								isValid = true;
 							}
 							break;
 
 						case "transactiondate":
-							if (srcField.startDate() != null && srcField.endDate() != null) {
-								criteria = criteria.replaceFirst("#Date#", "'" + srcField.startDate() + "'")
-										.replaceFirst("#Date#", "'" + srcField.endDate() + "'");
+								//WHERE strptime(TXDATE, '%d-%b-%Y')  BETWEEN strptime('27-Mar-2026', '%d-%b-%Y')  AND strptime('28-Mar-2026', '%d-%b-%Y');
+							if (StringUtils.isNotBlank(srcField.startDate()) && !srcField.startDate().equalsIgnoreCase("null")
+									&& StringUtils.isNotBlank(srcField.endDate()) && !srcField.endDate().equalsIgnoreCase("null")) {
+								criteria = criteria.replaceFirst("#Date#", "strptime('" + srcField.startDate() + "', '%d-%b-%Y')")
+										.replaceFirst("#Date#", "strptime('" + srcField.endDate() + "', '%d-%b-%Y')");
+								
+								criteria = criteria.replaceFirst(col.getFrom(),"strptime("+col.getFrom()+", '%d-%b-%Y')");
+								
 								isValid = true;
 							}
 							break;
 						case "amount":
-							
-							if (srcField.minamount() != null && srcField.maxamount() != null) {
+							if (StringUtils.isNotBlank(srcField.minamount()) && !srcField.minamount().equalsIgnoreCase("null")
+									&& StringUtils.isNotBlank(srcField.maxamount()) && !srcField.maxamount().equalsIgnoreCase("null")) {
 								criteria = criteria.replaceFirst("#amount#", "'" + srcField.minamount() + "'")
 										.replaceFirst("#amount#", "'" + srcField.maxamount() + "'");
 								isValid = true;
@@ -424,25 +445,51 @@ public class ParquetService {
 
 						case "depositorwithdrawal":
 							value = srcField.withdraDeposit();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#depositorwithdrawal#", "'" + value.trim() + "'");
 								isValid = true;
 							}
 							break;
 						case "transactiontype":
 							value = srcField.transmode();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#transactiontype#",  value.trim());
+								if(criteria.contains(col.getFrom()+"=")) {
+									criteria = criteria.replace("=", " ");
+								}
+								
 								isValid = true;
 							}
+							
 							break;
 						case "countercountrycode":
 							value = srcField.foreignExchInclaue();
-							if (value != null && !value.trim().isEmpty()) {
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
 								criteria = criteria.replace("#countercountrycode#", value.trim());
 								isValid = true;
 							}
 							break;
+						case "branchcode":
+							value = srcField.branchCode();
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
+								criteria = criteria.replace("#branchcode#", value.trim());
+								isValid = true;
+							}
+							break;
+						case "bankcode":
+							value = srcField.bankCode();
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
+								criteria = criteria.replace("#bankcode#", value.trim());
+								isValid = true;
+							}
+							break;
+						/*case "branchname":
+							value = srcField.branchCode();
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
+								criteria = criteria.replace("#branchname#", value.trim());
+								isValid = true;
+							}
+							break;*/
 						}
 						
 
@@ -470,9 +517,14 @@ public class ParquetService {
 				       }
 				       if(key.equalsIgnoreCase("transactiondate") && StringUtils.isNotBlank(srcField.transDate())) {
 				    	   if(valueMap.equalsIgnoreCase("GREATERTHANOREQUAL")) {
-				    		   qruRefTdate.set("transactiondate >= '" + srcField.transDate() + "'");
+				    		  // qruRefTdate.set("transactiondate >= '" + srcField.transDate() + "'");
+									qruRefTdate.set("datetime.strptime('transactiondate', '%d-%b-%Y') >= datetime.strptime('"
+											+ srcField.transDate() + "', '%d-%b-%Y')");
+
 				    	   }  else  if(valueMap.equalsIgnoreCase("LESSTHANOREQUAL")) {
-				    		   qruRefTdate.set("transactiondate <= '" + srcField.transDate() + "'");
+				    		  // qruRefTdate.set("transactiondate <= '" + srcField.transDate() + "'");
+				    		   qruRefTdate.set("datetime.strptime('transactiondate', '%d-%b-%Y') <= datetime.strptime('"
+										+ srcField.transDate() + "', '%d-%b-%Y')");
 				    	   }
 				       }
 				       // use key, value
@@ -488,6 +540,7 @@ public class ParquetService {
 			}
 			
 			if (!conditions.isEmpty()) {
+				
 				condition = " WHERE " + String.join(" AND ", conditions);
 			}
 
@@ -503,11 +556,11 @@ public class ParquetService {
 				parqutePathPart2 = "*/*/*";
 			} 
 			
-			String query = selectQuery + " FROM read_parquet('" + parquetPath + parqutePathPart2 + "/*.parquet' , union_by_name=true)";
+			String query = selectQuery + " FROM read_parquet('" + parquetPath + parqutePathPart2 + "/*.parquet' , union_by_name=true) "+ condition;
 			
 			LOGGER.debug("Generated query for shortName [{}] : [{}]", shortName, query);
-
-			return query;
+			qryObj =  new QueryWithCountDetailsRDTO(query, conditions.size());
+			return qryObj;
 
 		} catch (Exception e) {
 			LOGGER.error("Exception in buildSelectQuery | shortName={}", shortName, e);
@@ -545,12 +598,13 @@ public class ParquetService {
 			} 
 			
 			query = selectQuery + " FROM read_parquet('" + parqutePath.replace("\\", "/") + parqutePathPart2
-					+ "/*.parquet' , union_by_name=true)";
+					+ "/*.parquet' , union_by_name=true) ";
 
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ParquetService@buildSelectQuery : {}", e);
 		} finally {columnMappingLst = null; transacuFildRTO = null;}
 		return query;
+	
 	}
 	
 	/**

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
 import com.aml.srv.core.efrmsrv.repo.SummarizationDataImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
-import com.aml.srv.core.efrmsrv.repo.TransactionService;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
@@ -23,8 +22,9 @@ public class ATMWithdrawLocationFact implements FactInterface {
 
 	private Logger LOGGER = LoggerFactory.getLogger(ATMWithdrawLocationFact.class);
 
-	@Autowired
-	TransactionService transactionService;
+	/*
+	 * @Autowired TransactionService transactionService;
+	 */
 	
 	@Autowired
 	SummarizationDataImpl summarizationDataImpl;
@@ -61,7 +61,6 @@ public class ATMWithdrawLocationFact implements FactInterface {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ATMWithdrawLocationFact@getFactExecutor : {}", e);
 		} finally {

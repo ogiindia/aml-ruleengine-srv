@@ -24,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aml.srv.core.efrm.cust.scoring.CustmerGenuinessDetailsRecord;
 import com.aml.srv.core.efrm.cust.scoring.GenuinenessService;
-import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
+import com.aml.srv.core.efrm.parquet.entity.TransactionParquetMppaing;
+import com.aml.srv.core.efrm.parquet.service.AccountServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.service.TransactionAccountCustDetailsDAO;
 import com.aml.srv.core.efrm.trans.scoring.FraudScorer;
 import com.aml.srv.core.efrm.trans.scoring.TransactionGenuinessDetailsRecord;
 import com.aml.srv.core.efrm.trans.scoring.UltraFraudUtils;
@@ -97,6 +100,14 @@ public class ProcessEventsService {
 	@Value("${aml.cust.prof.avg.rsik.score:80}")
 	private Integer custRiskScoreAvg;
 
+	@Autowired
+	ParquetService parquetService;
+	
+	
+	
+	@Autowired
+	AccountServiceForParquet accountServiceForParqute;
+	
 	String clazzName = RuleExecutorService.class.getSimpleName();
 
 	/**
@@ -107,7 +118,7 @@ public class ProcessEventsService {
 	 */
 	@Async("RuleEngineExecutor")
 	//public void processEvent(TransactionDetailsEntity transactionEntity, String groupId, NormalizedTblEntity ruleEntity) {
-	public void processEvent(TransactionParquteMppaing transactionEntity, String groupId,
+	public void processEvent(TransactionParquetMppaing transactionEntity, String groupId,
 			NormalizedTblEntity ruleEntity) {
 	
 		Long threadId = null;
@@ -125,6 +136,7 @@ public class ProcessEventsService {
 		List<Schema> schemaList = null;
 		String responseJson = null;
 		ConcurrentHashMap<String, Object> mvelConcurntMap = null;
+		TransactionAccountCustDetailsDAO transAccCurObj = null;
 		try {
 			String threadName = Thread.currentThread().getName();
 			LOGGER.info("Running in thread : {}  (ID: {})", threadName, threadId);
@@ -184,6 +196,8 @@ public class ProcessEventsService {
 			 * Gson().fromJson(responseJson, RuleResposeDetailsVO.class); }
 			 */
 			ruleRespDtlVOObj = rulesIdentifierService.toComputeAMLData(bean);
+			String custId = null;
+			
 			if (ruleRespDtlVOObj != null) {
 				LOGGER.info("Thread Id : [{}] - Response from AML Service [IF]: [{}]", threadId, ruleRespDtlVOObj);
 				if (appConfig.ruleMvel.containsKey(ruleEntity.getId())) {
@@ -192,6 +206,20 @@ public class ProcessEventsService {
 					if (mvelConcurntMap != null) {
 						mvelConcurntMap = commonUtils.toUpdateConcurtMap(mvelConcurntMap, ruleRespDtlVOObj, threadId);
 
+						if(transactionEntity!=null) {
+							if(StringUtils.isNotBlank(transactionEntity.getAccountno())) {
+								transAccCurObj = accountServiceForParqute.getCustIdfromAccounts(transactionEntity.getAccountno(), ruleRespDtlVOObj.getReqId());
+								if(transAccCurObj!=null && StringUtils.isBlank(transactionEntity.getCustomerid())) {
+									bean.setCustomerId(transAccCurObj.getCustId());
+									custId = transAccCurObj.getCustId();
+								} else {
+									custId = transactionEntity.getCustomerid();
+								}
+							} else {
+								custId = transactionEntity.getCustomerid();
+							}
+						} 
+						LOGGER.info("Thread Id : [{}] -CUSTOMER-ID : [{}]", threadId, custId);
 						// ruleService.executeRules(decisionEngine, entity, "AML", "AML", "ADMIN",
 						// UUID.randomUUID().toString());
 						// response beancomputedFacts need to pass in entity
@@ -204,7 +232,7 @@ public class ProcessEventsService {
 							String riskType = null;
 							Double riskScoreTrans = Double.valueOf(0);
 							String riskTypeTrans = null;
-							AlretIntDTO alreINtDtoObj = alertImpl.getAlretTrans(transactionEntity.getCustomerid().toString() + transactionEntity.getTransactionid());
+							AlretIntDTO alreINtDtoObj = alertImpl.getAlretTrans(custId + transactionEntity.getTransactionid());
 							LOGGER.info("Thread Id : [{}] - Alret Available [{}]", threadId, alreINtDtoObj);
 							boolean trnsScrflg = false;
 							if (alreINtDtoObj != null) {
@@ -220,7 +248,7 @@ public class ProcessEventsService {
 							} else { trnsScrflg = true; }
 							if(trnsScrflg) {
 								LOGGER.info("Thread Id : [{}] - Alret Not Available [{}], Newly Calculate Cust and Trans Score.", threadId, alreINtDtoObj);
-								CustmerGenuinessDetailsRecord custRiskRcd = getCusomerGenuinessScore(transactionEntity.getCustomerid().toString(), threadId);
+								CustmerGenuinessDetailsRecord custRiskRcd = getCusomerGenuinessScore(custId, threadId);
 								if(custRiskRcd!=null) {
 									riskScore = UltraFraudUtils.toDoubleTwoDecimals(custRiskRcd.riskScore());
 									riskType = custRiskRcd.risk();
@@ -241,7 +269,6 @@ public class ProcessEventsService {
 								}
 								Long endTime = new Date().getTime();
 								LOGGER.info("Thread Id : [{}] - Transaction Score Fetch End - at [{}]", threadId, commonUtils.findIsHourMinSec((endTime - startDate)));
-
 							}
 						
 							Alerts alert = new Alerts();
@@ -253,9 +280,9 @@ public class ProcessEventsService {
 							alert.setAlertDesc(ruleEntity.getRuleDescription());
 							alert.setAlertId(commonUtils.getUniqueId());
 							alert.setAlertName(ruleEntity.getRuleName());
-							alert.setAlertParentId(transactionEntity.getCustomerid().toString() + transactionEntity.getTransactionid());
+							alert.setAlertParentId(custId + transactionEntity.getTransactionid());
 							alert.setAlertStatus(RuleWhizConstants.ALERT_STATUS_PENDING);
-							alert.setCustId(transactionEntity.getCustomerid().toString());
+							alert.setCustId(custId);
 							alert.setRiskCategory(ruleEntity.getAlertCategory());
 							alert.setRuleId(ruleEntity.getId());
 							alert.setTransactionId(transactionEntity.getTransactionid());
@@ -263,11 +290,13 @@ public class ProcessEventsService {
 							alert.setModifiedDt(new Timestamp(new Date().getTime()));
 							alertsRepo.save(alert);
 							
-							reportTableUpsertService.toUpdateInsertReportTbl(transactionEntity, ruleEntity.getAlertCategory(), ruleEntity.getRuleName());
-							
+							LOGGER.info("Insert will start into Report Tables");
+							reportTableUpsertService.toUpdateInsertReportTbl(transactionEntity, ruleEntity.getAlertCategory(), ruleEntity.getRuleName(), transAccCurObj, ruleEntity.getRuleDescription());
+							LOGGER.info("Insert are completed into Report Tables");
 							alert = null;
 							LOGGER.info("Thread Id : [{}] - Alert Inserted SUccessfully...........", threadId);
 							Thread.sleep(10000);
+							
 							toUpdateFinsecData(transactionEntity.getTransactionid(), ruleEntity.getAlertCategory(), threadId);
 						} else {
 							LOGGER.warn("Thread Id : [{}] - MVEL Expression Match Status [ELSE] BLock : [{}]", threadId,match);

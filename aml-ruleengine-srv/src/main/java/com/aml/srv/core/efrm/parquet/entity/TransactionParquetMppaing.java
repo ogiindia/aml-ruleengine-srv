@@ -1,10 +1,10 @@
-package com.aml.srv.core.efrm.parqute.entity;
+package com.aml.srv.core.efrm.parquet.entity;
 
 import jakarta.persistence.Column;
 
 //@Entity
 //@Table(name = "FS_TRN")
-public class TransactionParquteMppaing {
+public class TransactionParquetMppaing {
 
 	//@Id
 	@Column(name = "TRANSACTIONBATCHID")
@@ -39,6 +39,9 @@ public class TransactionParquteMppaing {
 
 	@Column(name = "CURRENCYCODE")
 	private String currencycode;
+	
+	@Column(name = "ACCTCURRENCYCODE")
+	private String acctcurrencycode;
 
 	@Column(name = "NARRATION")
 	private String narration;
@@ -205,4 +208,12 @@ public class TransactionParquteMppaing {
 		this.counterpartyaccountno = counterpartyaccountno;
 	}
 
+	public String getAcctcurrencycode() {
+		return acctcurrencycode;
+	}
+
+	public void setAcctcurrencycode(String acctcurrencycode) {
+		this.acctcurrencycode = acctcurrencycode;
+	}
+	
 }

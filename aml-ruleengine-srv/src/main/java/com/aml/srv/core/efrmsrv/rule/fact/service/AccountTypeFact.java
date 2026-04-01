@@ -1,25 +1,20 @@
 package com.aml.srv.core.efrmsrv.rule.fact.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.ParquetService;
-import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
-import com.aml.srv.core.efrmsrv.entity.AccountDetailsEntity;
-import com.aml.srv.core.efrmsrv.entity.CustomerDetailsEntity;
-import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
-import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
+import com.aml.srv.core.efrm.parquet.entity.AccountDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.service.SearchFieldsDTO;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.CustomerDetailsService;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionRepoImpl;
-import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.repo.TransactionService;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
@@ -72,14 +67,17 @@ public class AccountTypeFact implements FactInterface {
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
+			String category = factSetObj.getCategory();
 			// AccountDetailsEntity dto = null;
-			AccountDetailsParquteEntity dto = null;
+			AccountDetailsParquetEntity dto = null;
 			computedFactsVOObj.setStrType("str");
 			// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit,  srchStr
-			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null);
-			List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",AccountDetailsParquteEntity.class, srchDto,null);
+			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null,null,null);
+			List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",AccountDetailsParquetEntity.class, srchDto,null);
 			if (condition != null) {
-				if (condition.equals("CA_NON_PUBLIC")) {
+				if (condition.equals("CA_NON_PUBLIC") 
+						|| (StringUtils.isNotBlank(category) 
+							&& category.equalsIgnoreCase("CA_NON_PUBLIC"))) {
 					if (lstAc != null && lstAc.size() > 0) {
 						dto = lstAc.get(0);
 					}
@@ -92,7 +90,6 @@ public class AccountTypeFact implements FactInterface {
 						computedFactsVOObj.setStrValue("PUBLIC");
 					}
 				}
-
 			} else {
 				if (lstAc != null && lstAc.size() > 0) {
 					dto = lstAc.get(0);
@@ -110,7 +107,6 @@ public class AccountTypeFact implements FactInterface {
 					requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
 
 }

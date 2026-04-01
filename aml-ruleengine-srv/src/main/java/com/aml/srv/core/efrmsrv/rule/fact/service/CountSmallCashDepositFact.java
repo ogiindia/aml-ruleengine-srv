@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
@@ -34,7 +34,7 @@ public class CountSmallCashDepositFact implements FactInterface {
 			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::SumCashDepositFact@getFactExecutor (ENTRY) Called::::::::::",
+		LOGGER.info("REQID : [{}]::::::::::::CountSmallCashDepositFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
@@ -84,10 +84,10 @@ public class CountSmallCashDepositFact implements FactInterface {
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
 		} catch (Exception e) {
-			LOGGER.error("Exception found in SumCashDepositFact@getFactExecutor : {}", e);
+			LOGGER.error("Exception found in CountSmallCashDepositFact@getFactExecutor : {}", e);
 		} finally {
 			dto = null; transSrvSrchFilevoObj = null;
-			LOGGER.info("REQID : [{}]::::::::::::SumCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::CountSmallCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}

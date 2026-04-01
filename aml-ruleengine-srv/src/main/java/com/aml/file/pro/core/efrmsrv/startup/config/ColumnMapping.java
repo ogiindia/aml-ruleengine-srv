@@ -110,7 +110,4 @@ public class ColumnMapping implements Serializable{
 	public void setFormat(String format) {
 		this.format = format;
 	}
-	
-	
-    
 }

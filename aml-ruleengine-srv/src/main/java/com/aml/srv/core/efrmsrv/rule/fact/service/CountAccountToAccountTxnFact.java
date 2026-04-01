@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
@@ -77,15 +77,13 @@ public class CountAccountToAccountTxnFact implements FactInterface {
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getCountAmount() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
 			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
-
-		} catch (Exception e) {
+ 		} catch (Exception e) {
 			LOGGER.error("Exception found in InwardForeignRemittanceFact@getFactExecutor : {}", e);
 		} finally {
 			dto = null;  transSrvSrchFilevoObj = null;

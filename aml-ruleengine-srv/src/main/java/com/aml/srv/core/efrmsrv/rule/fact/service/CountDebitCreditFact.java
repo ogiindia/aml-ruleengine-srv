@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.ParquetService;
-import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.entity.AccountDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.service.SearchFieldsDTO;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
@@ -54,7 +54,7 @@ public class CountDebitCreditFact implements FactInterface {
 	AccountDetailsService accountDetailsService;
 	
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
@@ -71,7 +71,7 @@ public class CountDebitCreditFact implements FactInterface {
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
-		CustomerDetailsParquteEntity custDetails = null;
+		CustomerDetailsParquetEntity custDetails = null;
 		TransactionDetailsDTO dto = null;
 		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
@@ -147,11 +147,11 @@ public class CountDebitCreditFact implements FactInterface {
 						computedFactsVOObj.setValue(new BigDecimal(0));
 					}
 				} else if (condition.equals("DORMANT_REACTIVATION")) {
-					AccountDetailsParquteEntity acctStatus = null;
+					AccountDetailsParquetEntity acctStatus = null;
 					accNo = requVoObjParam.getAccountNo();
 					custId = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);
 					}
@@ -184,23 +184,23 @@ public class CountDebitCreditFact implements FactInterface {
 				} else if (condition.equals("NEW_ACCOUNT")) {
 					/*AccountDetailsEntity acctDetails = accountDetailsService
 							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);*/
-					AccountDetailsParquteEntity acctDetails = null;
+					AccountDetailsParquetEntity acctDetails = null;
 					
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
 					}
 					
-					if (acctDetails != null && acctDetails.getAccountOpenedDate() != null) {
+					if (acctDetails != null && acctDetails.getAccountopeneddate() != null) {
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-						LocalDate openDate = LocalDate.parse(acctDetails.getAccountOpenedDate(), formatter);
+						LocalDate openDate = LocalDate.parse(acctDetails.getAccountopeneddate(), formatter);
 						LocalDate currentDate = LocalDate.now();
 						System.out.println(openDate); // Output: 2025-05-20
 
 						long daysBetween = ChronoUnit.DAYS.between(openDate, currentDate);
 						if (days != null && days >= daysBetween) {
-							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
+							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 							computedFactsVOObj.setStrType("num");
 							dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
 									days, months, factSetObj, range, hours);
@@ -215,7 +215,7 @@ public class CountDebitCreditFact implements FactInterface {
 						} else if (months != null) {
 							int totalDays = months * 30;
 							if (totalDays >= daysBetween) {
-								computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
+								computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 								computedFactsVOObj.setAccountStatus("NEW");
 								dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
 										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
@@ -224,7 +224,7 @@ public class CountDebitCreditFact implements FactInterface {
 								}
 							}
 						} else {
-							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountOpenedDate());
+							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 							computedFactsVOObj.setAccountStatus("OLD");
 						}
 					} else {

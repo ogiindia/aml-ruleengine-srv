@@ -10,7 +10,6 @@ import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 
 @Service("ACTUAL_GOODS_VALUEService")
 public class ActualGoodValueFact implements FactInterface {
@@ -21,17 +20,14 @@ public class ActualGoodValueFact implements FactInterface {
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
 			List<ComputedFactsVO> computedFacts) {
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::RulesExecutorService@ruleOfFDConversion (FD_CONVERSION) Called::::::::::",
-				requVoObjParam.getReqId());
+		LOGGER.info("REQID : [{}]::::::::::::ActualGoodValueFact@getFactExecutor (FD_CONVERSION) Called::::::::::", requVoObjParam.getReqId());
 		try {
 
 		} catch (Exception e) {
-			LOGGER.error("Exception found in RulesExecutorService@ruleOfFDConversion : {}", e);
+			LOGGER.error("Exception found in ActualGoodValueFact@getFactExecutor : {}", e);
 		} finally {
 
-			LOGGER.info(
-					"REQID : [{}]::::::::::::RulesExecutorService@ruleOfFDConversion (FD_CONVERSION) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::ActualGoodValueFact@getFactExecutor (FD_CONVERSION) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}

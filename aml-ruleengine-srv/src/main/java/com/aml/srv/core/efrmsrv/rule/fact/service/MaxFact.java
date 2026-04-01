@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.AccountDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.ParquetService;
-import com.aml.srv.core.efrm.parqute.service.SearchFieldsDTO;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.entity.AccountDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.ParquetService;
+import com.aml.srv.core.efrm.parquet.service.SearchFieldsDTO;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.AccountStatusEntity;
 import com.aml.srv.core.efrmsrv.repo.AccountDetailsService;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
@@ -75,9 +75,9 @@ public class MaxFact implements FactInterface{
 					custId = null;
 					/*AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo,
 							requVoObjParam.getReqId());*/
-					AccountDetailsParquteEntity acctStatus = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquteEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquteEntity.class, srchDto,null);
+					AccountDetailsParquetEntity acctStatus = null;
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);
 					}

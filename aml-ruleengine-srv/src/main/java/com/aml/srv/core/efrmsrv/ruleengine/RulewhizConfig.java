@@ -38,7 +38,7 @@ public class RulewhizConfig {
 	public void loadRulesConfig() {
 		LOGGER.info("Loading Rules.....");
 		ruleEntity = normalizedTblImpl.getActiveRules();
-		LOGGER.info("[{}] - Rules are Loaded.", ruleEntity.size());
+		LOGGER.info("[{}] - No. Of Rules are Loaded...", ruleEntity.size());
 	}
 
 	/**

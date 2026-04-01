@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parqute.entity.CustomerDetailsParquteEntity;
-import com.aml.srv.core.efrm.parqute.service.CustomerServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parqute.service.TransactionServiceSrchFieldVo;
+import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrm.parquet.service.CustomerServiceForParquet;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
+import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionAttributeEntity;
 import com.aml.srv.core.efrmsrv.entity.FS_FactConditionEntity;
 import com.aml.srv.core.efrmsrv.repo.FS_FactConditionAttributeRepoImpl;
@@ -44,7 +44,7 @@ public class CountLocationFact implements FactInterface {
 	 */
 	
 	@Autowired
-	CustomerServiceForParqute customerServiceForParqute;
+	CustomerServiceForParquet customerServiceForParqute;
 	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
@@ -58,7 +58,7 @@ public class CountLocationFact implements FactInterface {
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
-		CustomerDetailsParquteEntity custDetails = null;
+		CustomerDetailsParquetEntity custDetails = null;
 		List<TransactionDetailsDTO> dto = null;
 		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {

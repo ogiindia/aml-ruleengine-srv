@@ -1,4 +1,4 @@
-package com.aml.srv.core.efrm.parqute.service;
+package com.aml.srv.core.efrm.parquet.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.aml.file.pro.core.efrmsrv.startup.config.ColumnMapping;
-import com.aml.srv.core.efrm.parqute.entity.TransactionParquteMppaing;
+import com.aml.srv.core.efrm.parquet.entity.TransactionParquetMppaing;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
@@ -53,8 +53,8 @@ public class TransactionServiceForParqute {
 	
 	 
 	 
-	public List<TransactionParquteMppaing> getTransDetailsFromProperty(Integer days) {
-		List<TransactionParquteMppaing> trasParMapLst = null;
+	public List<TransactionParquetMppaing> getTransDetailsFromProperty(Integer days) {
+		List<TransactionParquetMppaing> trasParMapLst = null;
 		String todayStr = null;
 		String startDateStr = null;
 		String dateformat = null;
@@ -65,14 +65,41 @@ public class TransactionServiceForParqute {
 			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
 			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
 			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, null, null, null, null,
-					null, null, null, null, null);
-			
-			int day   = stDate.getDayOfMonth();   // 1–31
-			int month = stDate.getMonthValue();   // 1–12
-			int year  = stDate.getYear();         // e.g. 2026
-			String parqutePath = year + "/" + month + "/" + day; // - */*/*
+					null, null, null, null, null,null,null);
+						
+			String yearStr  = String.valueOf(stDate.getYear());
+			String monthStr = String.format("%02d", stDate.getMonthValue());
+			String dateStr  = String.format("%02d", stDate.getDayOfMonth());
+			String parqutePath = yearStr + "/" + monthStr + "/" + dateStr; // - */*/*
 			trasParMapLst = parquetService.executeQueryReturnEntityWithPath("TRANSACTIONS",
-					TransactionParquteMppaing.class, srchDto, parqutePath);
+					TransactionParquetMppaing.class, srchDto, parqutePath);
+
+		} catch (Exception e) {
+			LOGGER.error("Exception found in TransactionServiceForParqute@getTransDetailsFromProperty : {}", e);
+		} finally {
+		}
+		return trasParMapLst;
+	}
+	
+	public List<TransactionParquetMppaing> getTransDetailsFromParquteFromTrnsid(Integer days, String transID) {
+		List<TransactionParquetMppaing> trasParMapLst = null;
+		String todayStr = null;
+		String startDateStr = null;
+		String dateformat = null;
+		try {
+			dateformat = getTransactionDateFormat();
+			LocalDate currentDateTdy = LocalDate.now();
+			LocalDate stDate = currentDateTdy.minusDays(days);
+			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
+			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
+			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, transID, null, null, null,
+					null, null, null, null, null,null,null);	
+			String yearStr  = String.valueOf(stDate.getYear());
+			String monthStr = String.format("%02d", stDate.getMonthValue());
+			String dateStr  = String.format("%02d", stDate.getDayOfMonth());
+			String parqutePath = yearStr + "/" + monthStr + "/" + dateStr; // - */*/*
+			trasParMapLst = parquetService.executeQueryReturnEntityWithPath("TRANSACTIONS",
+					TransactionParquetMppaing.class, srchDto, parqutePath);
 
 		} catch (Exception e) {
 			LOGGER.error("Exception found in TransactionServiceForParqute@getTransDetailsFromProperty : {}", e);
@@ -114,9 +141,9 @@ public class TransactionServiceForParqute {
 	 * @param reqId
 	 * @return
 	 */
-	public List<TransactionParquteMppaing> processTrasn(TransactionServiceSrchFieldVo transSrvVoObj, String reqId) {
+	public List<TransactionParquetMppaing> processTrasn(TransactionServiceSrchFieldVo transSrvVoObj, String reqId) {
 		String dateformat = null;
-		List<TransactionParquteMppaing>	 trasParMapLst = null;
+		List<TransactionParquetMppaing>	 trasParMapLst = null;
 		try {
 			if(transSrvVoObj!=null) {
 				dateformat = getTransactionDateFormat();
@@ -192,8 +219,8 @@ public class TransactionServiceForParqute {
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, null, transDate,inclauuseForeignCntry);
-				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquteMppaing.class, srchDto,null);
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, null, transDate,inclauuseForeignCntry,null,null);
+				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
 			} else {
 				
 			}
@@ -255,7 +282,7 @@ public class TransactionServiceForParqute {
 	}
 	
 	public TransactionDetailsDTO getTransactionDetails(TransactionServiceSrchFieldVo transSrvVoObj, String reqId, boolean amountOnly) {
-		List<TransactionParquteMppaing> transParMapLst = null;
+		List<TransactionParquetMppaing> transParMapLst = null;
 		TransactionDetailsDTO transDtlObj = null;
 		try {
 			transDtlObj = new TransactionDetailsDTO();
@@ -265,7 +292,7 @@ public class TransactionServiceForParqute {
 				
 				BigDecimal total = BigDecimal.ZERO;
 				BigDecimal sumAmt = BigDecimal.ZERO;
-				for (TransactionParquteMppaing transParquMapp : transParMapLst) {
+				for (TransactionParquetMppaing transParquMapp : transParMapLst) {
 					if (StringUtils.isNotBlank(transParquMapp.getAmount()) && amountOnly) {
 						String amtStr = transParquMapp.getAmount();
 						if (isValidDecimal(amtStr)) {
@@ -292,7 +319,7 @@ public class TransactionServiceForParqute {
 	}
 	
 	public List<TransactionDetailsDTO> getTransactionDetailsLst(TransactionServiceSrchFieldVo transSrvVoObj, String reqId) {
-		List<TransactionParquteMppaing> transParMapLst = null;
+		List<TransactionParquetMppaing> transParMapLst = null;
 		TransactionDetailsDTO transDtlObj = null;
 		List<TransactionDetailsDTO> transDtlDTOObj = null;
 		try {
@@ -300,11 +327,11 @@ public class TransactionServiceForParqute {
 			transDtlDTOObj =  new ArrayList<>();
 			if (transParMapLst != null && transParMapLst.size() > 0) {
 				
-				for (TransactionParquteMppaing transParquMapp : transParMapLst) {
-					transDtlObj.setCountAmount((long) transParMapLst.size());
+				for (TransactionParquetMppaing transParquMapp : transParMapLst) {
+					transDtlObj = new TransactionDetailsDTO();
 					BigDecimal total = BigDecimal.ZERO;
 					BigDecimal sumAmt = BigDecimal.ZERO;
-					transDtlObj = new TransactionDetailsDTO();
+					transDtlObj.setCountAmount((long) transParMapLst.size());
 					if (StringUtils.isNotBlank(transParquMapp.getAmount())){
 						String amtStr = transParquMapp.getAmount();
 						if (isValidDecimal(amtStr)) {
@@ -332,7 +359,7 @@ public class TransactionServiceForParqute {
 	 */
 	public PercentageDetailsVO getPerDetailsFromParqute(TransactionServiceSrchFieldVo transSrvVoObj, String reqId) {
 		TransactionCustomFieldRDTO  transCustFldRdtoObj = null;
-		List<TransactionParquteMppaing>	 trasParMapLst = null;
+		List<TransactionParquetMppaing>	 trasParMapLst = null;
 		PercentageDetailsVO  percDtlObj = null;
 		try {
 			if(transSrvVoObj!=null) {
@@ -441,15 +468,15 @@ public class TransactionServiceForParqute {
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,null); // amount>Givenammount and Date >=
-				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquteMppaing.class, srchDto,null);
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,null,null,null); // amount>Givenammount and Date >=
+				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
 			
 				if (trasParMapLst != null && trasParMapLst.size() > 0) {
 					percDtlObj = new PercentageDetailsVO();
 					percDtlObj.setReqId(reqId);
 					percDtlObj.setNoOfTimes((long) trasParMapLst.size());
 					BigDecimal total = BigDecimal.ZERO;
-					for (TransactionParquteMppaing tranmappPObj : trasParMapLst) {
+					for (TransactionParquetMppaing tranmappPObj : trasParMapLst) {
 						if (StringUtils.isNotBlank(tranmappPObj.getAmount())) {
 
 							String amtStr = tranmappPObj.getAmount();
@@ -475,11 +502,12 @@ public class TransactionServiceForParqute {
 	}
 	
 	public List<TransactionDetailsDTO> getTransDtoFromParqute(Schema schemaObj, String reqId, String accNo, String txnId, String custId) {
-		List<TransactionParquteMppaing> transactionParMappinLst = null;
+		List<TransactionParquetMppaing> transactionParMappinLst = null;
 		TransactionDetailsDTO transDtlObj = null;
 		List<TransactionDetailsDTO> transDtlDTOObj = null;
 		try {
-				if(schemaObj!=null) {
+			transDtlDTOObj = new ArrayList<>();
+			if (schemaObj != null) {
 					String tagName = schemaObj.getTag();
 					String value = schemaObj.getValue();
 					String conndition =  schemaObj.getCondition();
@@ -546,11 +574,11 @@ public class TransactionServiceForParqute {
 					
 					}
 					SerarchFieldsSimpleRuleDTO srchRlObj = new SerarchFieldsSimpleRuleDTO(custId, accNo, null,null, txnId,conditions, params, joinExpression);
-					transactionParMappinLst = parquetService.executeQueryWithSimpleRule("TRANSACTIONS",TransactionParquteMppaing.class,srchRlObj,null);
+					transactionParMappinLst = parquetService.executeQueryWithSimpleRule("TRANSACTIONS",TransactionParquetMppaing.class,srchRlObj,null);
 					
 					if (transactionParMappinLst != null && transactionParMappinLst.size() > 0) {
 						
-						for (TransactionParquteMppaing transParquMapp : transactionParMappinLst) {
+						for (TransactionParquetMppaing transParquMapp : transactionParMappinLst) {
 							BigDecimal total = BigDecimal.ZERO;
 							BigDecimal sumAmt = BigDecimal.ZERO;
 							transDtlObj = new TransactionDetailsDTO();
@@ -580,6 +608,8 @@ public class TransactionServiceForParqute {
 		}
 		return transDtlDTOObj;
 	}
+	
+	
 	
 	/**
 	 * 

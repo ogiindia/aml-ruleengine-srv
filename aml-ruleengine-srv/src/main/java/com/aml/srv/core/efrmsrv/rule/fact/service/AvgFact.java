@@ -59,7 +59,6 @@ public class AvgFact implements FactInterface {
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 			computedFactsVOObj.setStrType("num");
 			if (dto != null && dto.getAvgAmount() != null) {
-
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));
 			} else {
@@ -71,8 +70,7 @@ public class AvgFact implements FactInterface {
 			LOGGER.error("Exception found in CountFact@getFactExecutor : {}", e);
 		} finally {
 			sumLstObj = null;
-			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 

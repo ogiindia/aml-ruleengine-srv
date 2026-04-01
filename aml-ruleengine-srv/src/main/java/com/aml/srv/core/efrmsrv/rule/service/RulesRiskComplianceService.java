@@ -67,53 +67,41 @@ public class RulesRiskComplianceService implements RulesRiskComplianceIntr {
 				String columnName = fieldName.split("\\.")[1];
 				
 				
-				TransactionDetailsEntity txnDetails=transactionDetailsRepositryImpl2.getTxnDetails(tableName, accNo, custId, transMode, transType, hours, days, months, fieldName, columnName, factSetObj.getRange(), txnId);
-				if(txnDetails!=null && txnDetails.getCounterCountryCode()!=null)
-				{
-				if(condition!=null && condition.equals("HIGH_RISK_COUNTRIES"))
-				{
-						FS_FIUIndHighRiskCountryEntity	countryEntity = fS_FIUIndHighRiskCountryRepoImpl.getCountryByritiria(requVoObjParam.getReqId(), txnDetails.getCounterCountryCode());
-						if(countryEntity!=null)
-						{
+				TransactionDetailsEntity txnDetails = transactionDetailsRepositryImpl2.getTxnDetails(tableName, accNo,
+						custId, transMode, transType, hours, days, months, fieldName, columnName, factSetObj.getRange(),
+						txnId);
+				if (txnDetails != null && txnDetails.getCounterCountryCode() != null) {
+					if (condition != null && condition.equals("HIGH_RISK_COUNTRIES")) {
+						FS_FIUIndHighRiskCountryEntity countryEntity = fS_FIUIndHighRiskCountryRepoImpl
+								.getCountryByritiria(requVoObjParam.getReqId(), txnDetails.getCounterCountryCode());
+						if (countryEntity != null) {
 							computedFactsVOObj.setFact(factName);
-							computedFactsVOObj.setStrValue("HIGH_RISK");	
-						}
-						else
-						{
+							computedFactsVOObj.setStrValue("HIGH_RISK");
+						} else {
 							computedFactsVOObj.setFact(factName);
-							computedFactsVOObj.setStrValue("NO_HIGH_RISK");	
+							computedFactsVOObj.setStrValue("NO_HIGH_RISK");
 						}
-						
-					
-				}
-				else if(condition!=null && condition.equals("TERROR_HIGH_RISK"))
-				{
-					FS_FIUIndTerrorLocationEntity	countryEntity = fS_FIUIndTerrorLocationRepoImpl.getCountryByritiria(requVoObjParam.getReqId(), txnDetails.getCounterCountryCode());
-					if(countryEntity!=null)
-					{
+
+					} else if (condition != null && condition.equals("TERROR_HIGH_RISK")) {
+						FS_FIUIndTerrorLocationEntity countryEntity = fS_FIUIndTerrorLocationRepoImpl
+								.getCountryByritiria(requVoObjParam.getReqId(), txnDetails.getCounterCountryCode());
+						if (countryEntity != null) {
+							computedFactsVOObj.setFact(factName);
+							computedFactsVOObj.setStrValue("TERROR_HIGH_RISK");
+						} else {
+							computedFactsVOObj.setFact(factName);
+							computedFactsVOObj.setStrValue("NO_TERROR_HIGH_RISK");
+						}
+					} else {
 						computedFactsVOObj.setFact(factName);
-						computedFactsVOObj.setStrValue("TERROR_HIGH_RISK");	
+						computedFactsVOObj.setStrValue("NO_RISK");
 					}
-					else
-					{
-						computedFactsVOObj.setFact(factName);
-						computedFactsVOObj.setStrValue("NO_TERROR_HIGH_RISK");	
-					}
-				}
-				else
-				{
+
+				} else {
 					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setStrValue("NO_RISK");	
+					computedFactsVOObj.setStrValue("NO_RISK");
 				}
-				
-				}
-				else
-				{
-					computedFactsVOObj.setFact(factName);
-					computedFactsVOObj.setStrValue("NO_RISK");	
-				}
-				
-			
+
 			}
 
 		} catch (Exception e) {
@@ -177,8 +165,6 @@ public class RulesRiskComplianceService implements RulesRiskComplianceIntr {
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setStrValue(finalValue);
 				
-			
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in RulesRiskComplianceService@ruleOfPanStatus : {}", e);
 		} finally {
