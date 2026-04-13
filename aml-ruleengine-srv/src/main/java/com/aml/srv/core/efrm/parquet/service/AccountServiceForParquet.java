@@ -33,7 +33,7 @@ public class AccountServiceForParquet {
 		String closingDate=null;
 		String combinedStr=null;
 		try {
-			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 			lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 			if (lstAc != null && lstAc.size() > 0) {
 				AccountDetailsParquetEntity acc = lstAc.get(0);
@@ -59,7 +59,7 @@ public class AccountServiceForParquet {
 		SearchFieldsDTO srchDto =  null;
 		List<AccountDetailsParquetEntity> lstAc = null;
 		try {
-			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 			lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 			if (lstAc != null && lstAc.size() > 0) {
 				accountDtlParqEtyObj = lstAc.get(0);

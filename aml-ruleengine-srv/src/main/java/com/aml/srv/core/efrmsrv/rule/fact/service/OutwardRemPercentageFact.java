@@ -17,10 +17,13 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
 @Service("OUTWARD_REM_PERCENTAGEService")
 public class OutwardRemPercentageFact implements FactInterface{
+
+    private final AMLConstants AMLConstants;
 	
 private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	
@@ -29,6 +32,10 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
+
+    OutwardRemPercentageFact(AMLConstants AMLConstants) {
+        this.AMLConstants = AMLConstants;
+    }
 	
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
@@ -39,6 +46,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
+		TransactionDetailsDTO dto = null;
 		try {
 			computedFactsVOObj = new ComputedFactsVO();
 			accNo = requVoObjParam.getAccountNo();
@@ -67,15 +75,24 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			transSrvSrchFilevoObj.setTransMode(transMode);
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
-			TransactionDetailsDTO dto = null;
-			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
-					transMode, days, months, factSetObj, range);*/
+			transSrvSrchFilevoObj.setOthercurrencycode(true);
+			transSrvSrchFilevoObj.setWithdarwDeposit(null); // Inward and OUtward
+			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT, transMode, days, months, factSetObj, range);*/
+			
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+			
+			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR); // only outward
+			TransactionDetailsDTO outwardRemitancetrsn  = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+			
 			computedFactsVOObj.setStrType("num");
-			if (dto != null && dto.getSumAmount() != null) {
+			if (dto != null && dto.getSumAmount() != null 
+					&& outwardRemitancetrsn!=null && outwardRemitancetrsn.getSumAmount()!=null) {
 
+				Double outwardAmount = outwardRemitancetrsn.getSumAmount().doubleValue();
+				Double totalAmount = dto.getSumAmount().doubleValue();
+				double percentage = (outwardAmount / totalAmount) * 100;
 				computedFactsVOObj.setFact(factName);
-				computedFactsVOObj.setValue((dto.getSumAmount()));
+				computedFactsVOObj.setValue(new BigDecimal(percentage));
 			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));

@@ -76,7 +76,7 @@ public class MaxFact implements FactInterface{
 					/*AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo,
 							requVoObjParam.getReqId());*/
 					AccountDetailsParquetEntity acctStatus = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);

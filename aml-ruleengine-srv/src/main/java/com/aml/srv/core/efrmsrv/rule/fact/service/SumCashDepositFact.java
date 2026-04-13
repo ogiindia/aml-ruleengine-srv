@@ -17,7 +17,6 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
 
 @Service("SUM_CASH_DEPOSITSService")
@@ -35,6 +34,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 
 		ComputedFactsVO computedFactsVOObj = null;
 		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
+		TransactionDetailsDTO dto = null;
 		LOGGER.info("REQID : [{}]::::::::::::SumCashDepositFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
@@ -58,7 +58,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.DEPOSIT,
 					transMode, days, months, factSetObj, range);*/
 			
-			TransactionDetailsDTO dto = null;
+			
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
 			transSrvSrchFilevoObj.setAccNo(accNo);
 			transSrvSrchFilevoObj.setConditionName(condition);
@@ -68,7 +68,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			transSrvSrchFilevoObj.setHours(hours);
 			transSrvSrchFilevoObj.setMonths(months);
 			transSrvSrchFilevoObj.setRange(range);
-			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransMode("CASH");
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
@@ -84,10 +84,8 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in SumCashDepositFact@getFactExecutor : {}", e);
-		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::SumCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+		} finally {transSrvSrchFilevoObj = null; dto = null;
+			LOGGER.info("REQID : [{}]::::::::::::SumCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}

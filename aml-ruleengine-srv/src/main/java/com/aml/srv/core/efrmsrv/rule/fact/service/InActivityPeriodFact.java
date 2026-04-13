@@ -27,7 +27,7 @@ import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 @Service("INACTIVITY_PERIODService")
 public class InActivityPeriodFact implements FactInterface{
 
-private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
+private Logger LOGGER = LoggerFactory.getLogger(InActivityPeriodFact.class);
 	
 	@Autowired
 	TransactionService transactionService;
@@ -46,7 +46,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::AccountStatusFact@getFactExecutor (ENTRY) Called::::::::::",
+		LOGGER.info("REQID : [{}]::::::::::::InActivityPeriodFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
 				txnTime = null, txnId = null, reqId = null;
@@ -73,7 +73,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 					AccountDetailsParquetEntity acctDetails = null;
 					//AccountDetailsEntity acctDetails = accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
 					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
-							null, null, null,null,null,null,null);
+							null, null, null,null,null,null,null,null,null);
 					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
@@ -109,7 +109,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 				//AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo, reqId);
 				AccountDetailsParquetEntity acctStatus = null;
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(null, accNo, null, null, null, null, null, null, null,
-						null, null, null,null,null,null);
+						null, null, null,null,null,null,null,null);
 				List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",
 						AccountDetailsParquetEntity.class, srchDto, null);
 				if (lstAc != null && lstAc.size() > 0) {
@@ -122,11 +122,10 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.error("Exception found in AccountStatusFact@getFactExecutor : {}", e);
+			LOGGER.error("Exception found in InActivityPeriodFact@getFactExecutor : {}", e);
 		} finally {
 
-			LOGGER.info("REQID : [{}]::::::::::::AccountStatusFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::InActivityPeriodFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 

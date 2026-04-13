@@ -25,7 +25,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
-@Service("ATM_COUNT_LOCATIONSService")
+@Service("COUNT_LOCATIONSService")
 public class CountLocationFact implements FactInterface {
 
 	private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);

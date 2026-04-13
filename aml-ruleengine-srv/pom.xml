@@ -103,6 +103,15 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
+		<!--<dependency>
+			<groupId>io.valkey.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-valkey</artifactId>
+			<version>1.0.0</version>
+		</dependency>-->
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
@@ -116,12 +125,12 @@
 			<artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>org.redisson</groupId>
 			<artifactId>redisson</artifactId>
 			<version>3.16.0</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>com.mewebstudio</groupId>
 			<artifactId>captcha</artifactId>
@@ -285,10 +294,10 @@
 			<version>5.2.5</version>
 		</dependency>
 
-		<dependency>
+		<!--	<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
+		</dependency>-->
 
 
 		<dependency>
@@ -327,7 +336,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-<!-- Source: https://mvnrepository.com/artifact/ml.dmlc/xgboost4j -->
+		<!-- Source: https://mvnrepository.com/artifact/ml.dmlc/xgboost4j -->
 		<dependency>
 			<groupId>ml.dmlc</groupId>
 			<artifactId>xgboost4j_2.13</artifactId>
@@ -370,6 +379,11 @@
 			<id>spring-milestones</id>
 			<url>https://repo.spring.io/milestone</url>
 		</repository>
+		<!--<repository>
+			<id>valkey</id>
+			<url>https://repo.valkey.io/maven</url>  Check official docs for
+			exact URL 
+		</repository>-->
 	</repositories>
 </project>
 

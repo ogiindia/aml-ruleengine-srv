@@ -1,9 +1,13 @@
 package com.aml.srv.core.efrm.cust.scoring;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import com.efrm.rt.srv.core.common.repo.Dynamic_VO;
 
 @Service
 public class RedisService {
@@ -21,6 +25,18 @@ public class RedisService {
 			return (Object) redisTemplate.opsForValue().get(keyName);
 		} catch (Exception e) {
 			Logger.error("Exception found in RedisService@toPullObjectFrmRedis : {}", e);
+			return null;
+		} finally {
+
+		}
+	}
+	
+	public List<Dynamic_VO> toPullListIntoRedis(String keyName) {
+		try {
+			List<Dynamic_VO> list = (List<Dynamic_VO>) redisTemplate.opsForValue().get(keyName);
+			return list;
+		} catch (Exception e) {
+			Logger.error("Exception found in RedisService@toPullListIntoRedis : {}", e);
 			return null;
 		} finally {
 

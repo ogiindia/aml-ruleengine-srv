@@ -78,9 +78,10 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			computedFactsVOObj.setStrType("num");
 			if (condition != null) {
 				if (condition.equals("QUARTERLY_PERCENTAGE")) {
+					transSrvSrchFilevoObj.setMonths(3);
 					TransactionDetailsDTO threeMonthsumofamount  = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 					//TransactionDetailsDTO threeMonthsumofamount = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,null,null, null, 3, factSetObj, range,true);
-					
+					transSrvSrchFilevoObj.setMonths(null);
 					transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
 					//TransactionDetailsDTO threeMonthsumOfwithdraw = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range,true);
 					TransactionDetailsDTO threeMonthsumOfwithdraw = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);

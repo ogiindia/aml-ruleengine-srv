@@ -65,7 +65,7 @@ public class TransactionServiceForParqute {
 			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
 			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
 			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, null, null, null, null,
-					null, null, null, null, null,null,null);
+					null, null, null, null, null,null,null,null,null);
 						
 			String yearStr  = String.valueOf(stDate.getYear());
 			String monthStr = String.format("%02d", stDate.getMonthValue());
@@ -93,7 +93,7 @@ public class TransactionServiceForParqute {
 			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
 			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
 			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, transID, null, null, null,
-					null, null, null, null, null,null,null);	
+					null, null, null, null, null,null,null,null,null);	
 			String yearStr  = String.valueOf(stDate.getYear());
 			String monthStr = String.format("%02d", stDate.getMonthValue());
 			String dateStr  = String.format("%02d", stDate.getDayOfMonth());
@@ -200,6 +200,14 @@ public class TransactionServiceForParqute {
 				        .map(s -> "'" + s.replace("'", "''") + "'")  // escape single quotes
 				        .collect(Collectors.joining(",")) + ")";
 				}
+				/***REMITTENCE***/
+				String othercurrencycode=null;
+				if(transSrvVoObj.isOthercurrencycode()) {
+					List<String> countryCode = Arrays.asList(amlDeployedCountryCode);
+					othercurrencycode = " NOT IN(" + countryCode.stream()
+				        .map(s -> "'" + s.replace("'", "''") + "'")  // escape single quotes
+				        .collect(Collectors.joining(",")) + ")";
+				}
 								
 				List<String> channeltype = null;
 				String inClause = null;
@@ -219,7 +227,7 @@ public class TransactionServiceForParqute {
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, null, transDate,inclauuseForeignCntry,null,null);
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, null, transDate,inclauuseForeignCntry,null,null,null,othercurrencycode);
 				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
 			} else {
 				
@@ -424,6 +432,22 @@ public class TransactionServiceForParqute {
 					}
 				}
 				
+				String inclauuseForeignCntry = null;
+				if(transSrvVoObj.isForeignCountryCode()) {
+					List<String> countryCode = Arrays.asList(amlDeployedCountryCode);
+					inclauuseForeignCntry = " NOT IN(" + countryCode.stream()
+				        .map(s -> "'" + s.replace("'", "''") + "'")  // escape single quotes
+				        .collect(Collectors.joining(",")) + ")";
+				}
+				/***REMITTENCE***/
+				String othercurrencycode=null;
+				if(transSrvVoObj.isOthercurrencycode()) {
+					List<String> countryCode = Arrays.asList(amlDeployedCountryCode);
+					othercurrencycode = " NOT IN(" + countryCode.stream()
+				        .map(s -> "'" + s.replace("'", "''") + "'")  // escape single quotes
+				        .collect(Collectors.joining(",")) + ")";
+				}
+				
 				List<String> channeltype = null;
 				String inClause = null;
 				if (StringUtils.isNotBlank(transSrvVoObj.getTransMode()) && transSrvVoObj.getTransMode().equals("CASH")) {
@@ -462,13 +486,13 @@ public class TransactionServiceForParqute {
 						LOGGER.info("REQ ID : [{}] - toGetValueByImediateWithDraw default block Condition not match");
 					}
 				} else {
-					conditionLst.put("amount","LESSTHANOREQUAL");
-					conditionLst.put("transactionDate","GREATERTHANOREQUAL");
+					//conditionLst.put("amount","LESSTHANOREQUAL");
+					//conditionLst.put("transactionDate","GREATERTHANOREQUAL");
 				}
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,null,null,null); // amount>Givenammount and Date >=
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,inclauuseForeignCntry,null,null,null,othercurrencycode); // amount>Givenammount and Date >=
 				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
 			
 				if (trasParMapLst != null && trasParMapLst.size() > 0) {

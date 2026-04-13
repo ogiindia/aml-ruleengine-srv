@@ -72,7 +72,7 @@ public class AccountTypeFact implements FactInterface {
 			AccountDetailsParquetEntity dto = null;
 			computedFactsVOObj.setStrType("str");
 			// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit,  srchStr
-			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null,null,null);
+			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null,null,null,null,null);
 			List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",AccountDetailsParquetEntity.class, srchDto,null);
 			if (condition != null) {
 				if (condition.equals("CA_NON_PUBLIC") 

@@ -16,27 +16,28 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 
+@Service("SUM_INWARD_REMITTANCESService")
+public class SumOfInwardRemittanceFact implements FactInterface{
 
-@Service("SUM_NONCASH_DEPOSITSService")
-public class SumNonCashDepositFact implements FactInterface{
+	private Logger LOGGER = LoggerFactory.getLogger(SumOutwardRemittanceFact.class);
 
-	private Logger LOGGER = LoggerFactory.getLogger(SumNonCashDepositFact.class);
-	
 	@Autowired
 	TransactionService transactionService;
-
+	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
-	
+
 	@Override
-	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
+	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,
+			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::SumNonCashDepositFact@getFactExecutor (ENTRY) Called::::::::::",
+		LOGGER.info("REQID : [{}]::::::::::::SumOutwardRemittanceFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
-		String factName = null, accNo = null, custId = null, transMode = null, transType = null, 
-				txnTime = null, txnId = null, reqId = null;
+		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
+				txnId = null, reqId = null;
 		TransactionDetailsDTO dto = null;
 		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		try {
@@ -46,7 +47,7 @@ public class SumNonCashDepositFact implements FactInterface{
 			txnId = requVoObjParam.getTxnId();
 			reqId = requVoObjParam.getReqId();
 			transMode = requVoObjParam.getTransactionMode();
-			transType = requVoObjParam.getTxnType();			
+			transType = requVoObjParam.getTxnType();
 			factName = factSetObj.getFact();
 			Integer days = factSetObj.getDays();
 			Integer hours = factSetObj.getHours();
@@ -54,7 +55,6 @@ public class SumNonCashDepositFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
-			computedFactsVOObj.setStrType("num");
 			
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
 			transSrvSrchFilevoObj.setAccNo(accNo);
@@ -65,23 +65,25 @@ public class SumNonCashDepositFact implements FactInterface{
 			transSrvSrchFilevoObj.setHours(hours);
 			transSrvSrchFilevoObj.setMonths(months);
 			transSrvSrchFilevoObj.setRange(range);
-			transSrvSrchFilevoObj.setTransMode("NON-CASH");
+			transSrvSrchFilevoObj.setTransMode(transMode);
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
+			transSrvSrchFilevoObj.setOthercurrencycode(true);
+			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
 			
-			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
-					transMode, days, months, factSetObj, range,hours);*/
+			computedFactsVOObj.setStrType("num");
+			/**TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
+					transMode, days, months, factSetObj, range, hours);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			if (dto != null && dto.getSumAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(dto.getSumAmount());
 			}
-
 		} catch (Exception e) {
-			LOGGER.error("Exception found in SumNonCashDepositFact@getFactExecutor : {}", e);
+			LOGGER.error("Exception found in SumOutwardRemittanceFact@getFactExecutor : {}", e);
 		} finally {
-			LOGGER.info("REQID : [{}]::::::::::::SumNonCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::SumOutwardRemittanceFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}

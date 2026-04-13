@@ -85,7 +85,7 @@ public class SumCashTxnFact implements FactInterface {
 			transSrvSrchFilevoObj.setHours(hours);
 			transSrvSrchFilevoObj.setMonths(months);
 			transSrvSrchFilevoObj.setRange(range);
-			transSrvSrchFilevoObj.setTransMode(transMode);
+			transSrvSrchFilevoObj.setTransMode("CASH");
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			

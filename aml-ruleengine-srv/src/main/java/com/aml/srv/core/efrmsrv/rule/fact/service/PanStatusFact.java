@@ -39,7 +39,6 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 	@Override
 	public ComputedFactsVO getFactExecutor(RuleRequestVo requVoObjParam, Factset factSetObj,List<ComputedFactsVO> computedFacts ) {
 		ComputedFactsVO computedFactsVOObj = null;
-		TransactionServiceSrchFieldVo transSrvSrchFilevoObj = null;
 		LOGGER.info("REQID : [{}]::::::::::::PanStatusFact@getFactExecutor (ENTRY) Called::::::::::", requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null, txnId = null, reqId = null;
 		try {

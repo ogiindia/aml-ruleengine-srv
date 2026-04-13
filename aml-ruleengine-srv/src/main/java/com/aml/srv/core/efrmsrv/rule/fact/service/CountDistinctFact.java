@@ -75,7 +75,7 @@ public class CountDistinctFact implements FactInterface{
 					AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range, hours);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			computedFactsVOObj.setStrType("num");
-			if (dto != null && dto.getCountAmount() != null) {
+			if (dto != null && dto.getCOuntDistcounterpartyAccountNo() != null) {
 
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCOuntDistcounterpartyAccountNo()));

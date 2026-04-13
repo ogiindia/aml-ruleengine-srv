@@ -3,18 +3,25 @@ package com.aml.srv.core.efrmsrv.ruleengine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.aml.srv.core.efrm.cust.scoring.RedisService;
 import com.aml.srv.core.efrmsrv.entity.NormalizedTblEntity;
 import com.aml.srv.core.efrmsrv.repo.NormalizedTblImpl;
 import com.google.gson.Gson;
 
+
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 @Configuration
 @EnableScheduling
@@ -24,9 +31,17 @@ public class RulewhizConfig {
 	public List<NormalizedTblEntity> ruleEntity = new ArrayList<NormalizedTblEntity>();
 	public HashMap<String, String> ruleMvel = new HashMap<String, String>();
 	public HashMap<String, String> ruleJson = new HashMap<String, String>();
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
 	@Autowired
+	LettuceConnectionFactory connectionFactory;
+	 
+	@Autowired
+	RedisService redisService;
+	
+	@Autowired
 	private NormalizedTblImpl normalizedTblImpl;
+	
 
 	@PostConstruct
 	public void loadConfigs() {
@@ -39,6 +54,31 @@ public class RulewhizConfig {
 		LOGGER.info("Loading Rules.....");
 		ruleEntity = normalizedTblImpl.getActiveRules();
 		LOGGER.info("[{}] - No. Of Rules are Loaded...", ruleEntity.size());
+	}
+	
+
+	@PostConstruct
+	public void startJob() {
+		executor.scheduleAtFixedRate(() -> {
+			try {
+				// Example: read/write to Redis
+				redisService.setValue("heartbeat", System.currentTimeMillis());
+				var cfg = connectionFactory.getStandaloneConfiguration();
+				if (cfg != null) {
+					LOGGER.warn("Redis host = " + cfg.getHostName() + ", port = " + cfg.getPort());
+				}
+				LOGGER.warn("Redis heartbeat updated....");
+			} catch (Exception e) {
+				// Handle gracefully if Redis is unavailable
+				LOGGER.error("Redis job failed: " + e.getMessage());
+			}
+		}, 0, 1, TimeUnit.MINUTES);
+	}
+
+	@PreDestroy
+	public void stopJob() { // Cleanly shut down when Spring context closes
+		executor.shutdownNow();
+		LOGGER.warn("Redis scheduled job stopped");
 	}
 
 	/**

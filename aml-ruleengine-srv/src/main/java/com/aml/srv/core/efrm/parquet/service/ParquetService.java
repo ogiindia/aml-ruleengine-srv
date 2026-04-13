@@ -483,6 +483,20 @@ public class ParquetService {
 								isValid = true;
 							}
 							break;
+						case "currencycode":
+							value = srcField.currencycode();
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
+								criteria = criteria.replace("#currencycode#", value.trim());
+								isValid = true;
+							}
+							break;
+						case "othercurrencycode":
+							value = srcField.othercurrencycode();
+							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {
+								criteria = criteria.replace("#othercurrencycode#", value.trim());
+								isValid = true;
+							}
+							break;
 						/*case "branchname":
 							value = srcField.branchCode();
 							if (StringUtils.isNotBlank(value) && !value.equalsIgnoreCase("null")) {

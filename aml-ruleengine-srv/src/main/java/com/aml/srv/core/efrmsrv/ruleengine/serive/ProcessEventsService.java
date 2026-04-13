@@ -92,6 +92,9 @@ public class ProcessEventsService {
 	AlertImpl alertImpl;
 	
 	@Autowired
+	WhiteListAccountCheck whiteListAccountCheck;
+	
+	@Autowired
 	ReportTableUpsertService reportTableUpsertService;
 
 	@Value("${aml.without.api.testing:false}")
@@ -177,12 +180,16 @@ public class ProcessEventsService {
 			bean.setFactSet(factSetList);
 			bean.setSchema(schemaList);
 			// String jsonReq = new Gson().toJson(bean);
-			// LOGGER.info("Thread Id : [{}] - API Request [{}] - URL : [{}] - Row ID : [{}]
-			// - RULE NAME : [{}]",threadId, jsonReq, apiUrl, ruleEntity.getId(),
-			// ruleEntity.getRuleName());
+			// LOGGER.info("Thread Id : [{}] - API Request [{}] - URL : [{}] - Row ID : [{}]  - RULE NAME : [{}]",threadId, jsonReq, apiUrl, ruleEntity.getId(), ruleEntity.getRuleName());
 			if (withOutAPITesting) {
 				return;
 			}
+			/** Check This account No. is available in Whitelist List**/
+			boolean isWhiteListedAccount = whiteListAccountCheck.checkIsWhiteLitedAccount(String.valueOf(transactionEntity.getAccountno()));
+			if(isWhiteListedAccount) {
+				LOGGER.info("Thread Id : [{}] - This Account Number [{}] is available in White listed List - [{}]",threadId, transactionEntity.getAccountno(), isWhiteListedAccount);
+				return;
+			} 
 			// responseBean
 			/*
 			 * okHttpResp = apiService.toSendRequest(apiUrl, jsonReq); if (okHttpResp!=null

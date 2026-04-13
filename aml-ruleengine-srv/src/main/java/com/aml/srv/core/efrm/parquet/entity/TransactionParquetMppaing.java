@@ -63,6 +63,9 @@ public class TransactionParquetMppaing {
 
 	@Column(name = "COUNTERCOUNTRYCODE")
 	private String countercountrycode;
+	
+	@Column(name = "OTHERCURRENCYCODE")
+	private String othercurrencycode;
 
 	public String getTransactionbatchid() {
 		return transactionbatchid;
@@ -215,5 +218,13 @@ public class TransactionParquetMppaing {
 	public void setAcctcurrencycode(String acctcurrencycode) {
 		this.acctcurrencycode = acctcurrencycode;
 	}
-	
+
+	public String getOthercurrencycode() {
+		return othercurrencycode;
+	}
+
+	public void setOthercurrencycode(String othercurrencycode) {
+		this.othercurrencycode = othercurrencycode;
+	}
+		
 }

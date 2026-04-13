@@ -115,7 +115,7 @@ public class InwardForeignRemittanceFact implements FactInterface {
 					// accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
 
 					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
-							null, null, null,null,null,null,null);
+							null, null, null,null,null,null,null,null,null);
 					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto, null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
@@ -151,8 +151,11 @@ public class InwardForeignRemittanceFact implements FactInterface {
 							if (totalDays >= daysBetween) {
 								computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 								computedFactsVOObj.setAccountStatus("NEW");
-								dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
-										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+								transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
+								dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+							
+								/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);*/
 								if (dto != null && dto.getTxnAmount() != null) {
 									computedFactsVOObj.setValue((dto.getTxnAmount()));
 								}
@@ -192,8 +195,12 @@ public class InwardForeignRemittanceFact implements FactInterface {
 					}
 
 					if (profile != null) {
-						dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
-								AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+								AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);*/
+						
+						transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
+						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+						
 						if (dto != null && dto.getTxnAmount() != null) {
 
 							computedFactsVOObj.setFact(factName);
@@ -213,10 +220,13 @@ public class InwardForeignRemittanceFact implements FactInterface {
 				}
 
 			} else {
-				dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, AMLConstants.DEPOSIT,
-						transMode, true, days, months, factSetObj, range, false);
+				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, AMLConstants.DEPOSIT,
+						transMode, true, days, months, factSetObj, range, false);*/
+				
+				transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
+				dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
+				
 				if (dto != null && dto.getTxnAmount() != null) {
-
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setValue((dto.getTxnAmount()));
 				} else {
@@ -227,9 +237,7 @@ public class InwardForeignRemittanceFact implements FactInterface {
 		} catch (Exception e) {
 			LOGGER.error("Exception found in InwardForeignRemittanceFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::InwardForeignRemittanceFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::InwardForeignRemittanceFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 

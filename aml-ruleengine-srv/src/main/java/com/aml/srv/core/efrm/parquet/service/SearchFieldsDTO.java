@@ -10,6 +10,12 @@ public record SearchFieldsDTO(String customerId, String accountNo, String startD
 		String withdraDeposit,
 		String transtype,
 		String transmode,
-		Map<String, String> conditionLst, String transDate, String foreignExchInclaue, String branchCode, String bankCode) {
+		Map<String, String> conditionLst,
+		String transDate,
+		String foreignExchInclaue,
+		String branchCode,
+		String bankCode,
+		String currencycode,
+		String othercurrencycode) {
 
 }

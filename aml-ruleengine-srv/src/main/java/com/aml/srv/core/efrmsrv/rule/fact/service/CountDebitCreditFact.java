@@ -150,7 +150,7 @@ public class CountDebitCreditFact implements FactInterface {
 					AccountDetailsParquetEntity acctStatus = null;
 					accNo = requVoObjParam.getAccountNo();
 					custId = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);
@@ -186,7 +186,7 @@ public class CountDebitCreditFact implements FactInterface {
 							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);*/
 					AccountDetailsParquetEntity acctDetails = null;
 					
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
 					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
@@ -196,16 +196,17 @@ public class CountDebitCreditFact implements FactInterface {
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 						LocalDate openDate = LocalDate.parse(acctDetails.getAccountopeneddate(), formatter);
 						LocalDate currentDate = LocalDate.now();
-						System.out.println(openDate); // Output: 2025-05-20
+						//System.out.println(openDate); // Output: 2025-05-20
 
 						long daysBetween = ChronoUnit.DAYS.between(openDate, currentDate);
 						if (days != null && days >= daysBetween) {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 							computedFactsVOObj.setStrType("num");
-							dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
-									days, months, factSetObj, range, hours);
+							dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+							
+							/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
+									days, months, factSetObj, range, hours);*/
 							if (dto != null && dto.getCountAmount() != null) {
-
 								computedFactsVOObj.setFact(factName);
 								computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
 							} else {
@@ -217,8 +218,10 @@ public class CountDebitCreditFact implements FactInterface {
 							if (totalDays >= daysBetween) {
 								computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 								computedFactsVOObj.setAccountStatus("NEW");
-								dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
-										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);
+								/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
+										AMLConstants.DEPOSIT, transMode, true, days, months, factSetObj, range, false);*/
+								dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
+								
 								if (dto != null && dto.getTxnAmount() != null) {
 									computedFactsVOObj.setValue((dto.getTxnAmount()));
 								}

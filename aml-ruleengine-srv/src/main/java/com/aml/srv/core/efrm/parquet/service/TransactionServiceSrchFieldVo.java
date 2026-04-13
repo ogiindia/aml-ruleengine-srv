@@ -25,6 +25,8 @@ public class TransactionServiceSrchFieldVo implements Serializable {
 	private String conditionName;
 	private String transactionDate;
 	private boolean foreignCountryCode;
+	private boolean currencycode;
+	private boolean othercurrencycode;
 
 	public String getAccNo() {
 		return accNo;
@@ -145,6 +147,20 @@ public class TransactionServiceSrchFieldVo implements Serializable {
 	public void setForeignCountryCode(boolean foreignCountryCode) {
 		this.foreignCountryCode = foreignCountryCode;
 	}
-	
 
+	public boolean isCurrencycode() {
+		return currencycode;
+	}
+
+	public void setCurrencycode(boolean currencycode) {
+		this.currencycode = currencycode;
+	}
+
+	public boolean isOthercurrencycode() {
+		return othercurrencycode;
+	}
+
+	public void setOthercurrencycode(boolean othercurrencycode) {
+		this.othercurrencycode = othercurrencycode;
+	}
 }

@@ -35,8 +35,7 @@ public class CountAccountTransferFact implements FactInterface {
 			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::CountAccountTransferFact@getFactExecutor (ENTRY) Called::::::::::",
-				requVoObjParam.getReqId());
+		LOGGER.info("REQID : [{}]::::::::::::CountAccountTransferFact@getFactExecutor (ENTRY) Called::::::::::", requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
 		TransactionDetailsDTO dto = null;

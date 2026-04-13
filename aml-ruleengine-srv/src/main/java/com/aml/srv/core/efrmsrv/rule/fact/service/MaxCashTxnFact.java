@@ -58,7 +58,6 @@ public class MaxCashTxnFact implements FactInterface{
 
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW,
 					transMode, days, months, factSetObj, range);*/
-			
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,AMLConstants.DR,days,months,hours);
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 			
@@ -75,12 +74,8 @@ public class MaxCashTxnFact implements FactInterface{
 		} catch (Exception e) {
 			LOGGER.error("Exception found in MaxCashTxnFact@getFactExecutor : {}", e);
 		} finally {
-
-			LOGGER.info("REQID : [{}]::::::::::::MaxCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::MaxCashTxnFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
-
 	}
-
 }
