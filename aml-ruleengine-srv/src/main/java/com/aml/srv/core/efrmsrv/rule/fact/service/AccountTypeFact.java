@@ -21,6 +21,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("ACCOUNT_TYPESService")
 public class AccountTypeFact implements FactInterface {
@@ -70,10 +71,10 @@ public class AccountTypeFact implements FactInterface {
 			String category = factSetObj.getCategory();
 			// AccountDetailsEntity dto = null;
 			AccountDetailsParquetEntity dto = null;
-			computedFactsVOObj.setStrType("str");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 			// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit,  srchStr
-			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null,null,null,null,null);
-			List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",AccountDetailsParquetEntity.class, srchDto,null);
+			SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null,null,null,null,null,null,null,null,null,null,null,null,null);
+			List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS,AccountDetailsParquetEntity.class, srchDto,null);
 			if (condition != null) {
 				if (condition.equals("CA_NON_PUBLIC") 
 						|| (StringUtils.isNotBlank(category) 

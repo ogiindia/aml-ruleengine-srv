@@ -22,6 +22,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("MAX_FOREIGN_REMITTANCESService")
 public class MaxForeignRemittanceFact implements FactInterface {
@@ -91,7 +92,7 @@ public class MaxForeignRemittanceFact implements FactInterface {
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setConditionName(condition);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			
 			//dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, null, transMode, true, days, months, factSetObj, range, false);
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);

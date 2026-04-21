@@ -20,6 +20,7 @@ import com.aml.srv.core.efrm.parquet.service.ParquetService;
 import com.aml.srv.core.efrm.parquet.service.TransactionCustomFieldRDTO;
 import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
 import com.aml.srv.core.efrmsrv.repo.MapperImpl;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.DMatrix;
@@ -142,7 +143,7 @@ public class FraudScorer {
 			/*for (MapperSummarizationFiledDTO mapperObj : mapperSummdto) {
 				tem.add(customerDetailsMLUse.getDataFromDynamicQueryTrans(mapperObj, transId));
 			}*/
-			transCustomFldDTOObj = parquetService.getConfig("TRANSACTIONS");
+			transCustomFldDTOObj = parquetService.getConfig(RuleWhizConstants.TRANSACTIONS);
 			if(transCustomFldDTOObj!=null) {
 				scoringColumnlst = new ArrayList<>();
 				columMapLst = transCustomFldDTOObj.columnMappLstObj();

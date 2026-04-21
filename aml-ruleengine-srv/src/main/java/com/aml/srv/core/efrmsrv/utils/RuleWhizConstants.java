@@ -36,4 +36,11 @@ public class RuleWhizConstants {
 	
 	public static final String HHmmss = "HHmmss";
 	
+	public static final String DEPOSITS="DEPOSITS";
+	public static final String WITHDRAWALS="WITHDRAWALS";
+	public static final String ACCOUNTS="ACCOUNTS";
+	public static final String TRANSACTIONS="TRANSACTIONS";
+	public static final String CUSTOMERS="CUSTOMERS";
+	public static final String BRANCH="BRANCH";
+	
 }

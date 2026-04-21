@@ -20,6 +20,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("MAX_CASH_DEPOSITService")
@@ -62,7 +63,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,AMLConstants.CR,days,months,hours);
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getMaxAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);

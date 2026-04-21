@@ -16,6 +16,6 @@ public record SearchFieldsDTO(String customerId, String accountNo, String startD
 		String branchCode,
 		String bankCode,
 		String currencycode,
-		String othercurrencycode) {
+		String othercurrencycode, String customQuery) {
 
 }

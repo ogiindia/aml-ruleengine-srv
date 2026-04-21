@@ -32,6 +32,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("INWARD_FOREIGN_REMITTANCEService")
 public class InwardForeignRemittanceFact implements FactInterface {
@@ -115,8 +116,8 @@ public class InwardForeignRemittanceFact implements FactInterface {
 					// accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
 
 					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
-							null, null, null,null,null,null,null,null,null);
-					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto, null);
+							null, null, null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto, null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
 					}
@@ -132,7 +133,7 @@ public class InwardForeignRemittanceFact implements FactInterface {
 						if (days != null && days >= daysBetween) {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
 							computedFactsVOObj.setAccountStatus("NEW");
-							computedFactsVOObj.setStrType("num");
+							computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 							
 							transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.CR);
 							dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);

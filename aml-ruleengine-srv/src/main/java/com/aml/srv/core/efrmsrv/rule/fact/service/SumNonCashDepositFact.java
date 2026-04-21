@@ -16,6 +16,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("SUM_NONCASH_DEPOSITSService")
@@ -54,7 +55,7 @@ public class SumNonCashDepositFact implements FactInterface{
 			txnTime = requVoObjParam.getTxn_time();
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
 			transSrvSrchFilevoObj.setAccNo(accNo);

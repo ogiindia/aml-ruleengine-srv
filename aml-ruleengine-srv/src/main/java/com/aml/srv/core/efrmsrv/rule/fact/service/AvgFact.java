@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("AVGService")
 public class AvgFact implements FactInterface {
@@ -57,7 +58,7 @@ public class AvgFact implements FactInterface {
 					transMode, days, months, factSetObj, range, hours);*/
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,null,days,months,hours);
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getAvgAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));

@@ -33,22 +33,10 @@ public class RulesIdentifierService {
 
 	private Logger LOGGER = LoggerFactory.getLogger(RulesIdentifierService.class);
 
-	/*
-	 * @Autowired RulesAggregateService rulesExecutorService;
-	 */
-
-	/*
-	 * @Autowired RulesRiskComplianceService rulesRsikComplianceService;
-	 */
-
-	/*
-	 * @Autowired CustomerDetailsRepoImpl customerDetailsRepoImpl;
-	 */
-	/*
-	 * @Autowired AccountDetailsService accountDetailsService;
-	 * 
-	 * @Autowired AccountStatusRepositryImpl accountStatusRepositryImpl;
-	 */
+	/*@Autowired RulesAggregateService rulesExecutorService; */
+	/*@Autowired RulesRiskComplianceService rulesRsikComplianceService;  */
+	/* @Autowired CustomerDetailsRepoImpl customerDetailsRepoImpl; */
+	/* @Autowired AccountDetailsService accountDetailsService; @Autowired AccountStatusRepositryImpl accountStatusRepositryImpl; */
 	
 	@Autowired
 	AccountServiceForParquet accountServiceForParqute;
@@ -62,28 +50,39 @@ public class RulesIdentifierService {
 	@Autowired
 	ClassLoaderUtil classLoaderUtil;
 
-	public RuleResposeDetailsVO toComputeAMLData(RuleRequestVo ruleRequestVoObParam) {
+	/**
+	 * 
+	 * @param ruleRequestVoObParam
+	 * @return
+	 */
+	public RuleResposeDetailsVO toComputeAMLData(RuleRequestVo ruleRequestVoObParam, String txnId, String ruleId) {
 
 		String classname = RulesIdentifierService.class.getSimpleName();
 		String methodname = Thread.currentThread().getStackTrace()[1].getMethodName();
-		LOGGER.info("RulesIdentifierService toComputeAMLData method called......[{}] [{}]", classname, methodname);
-
-		//RuleResponseVo ruleResponseVoObj = null;
-		//List<RuleResposeDetailsVO> ruleRespDtlObj = null;
+		LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - RulesIdentifierService toComputeAMLData method called......[{}] [{}]", txnId,ruleId, classname, methodname);
 		RuleResposeDetailsVO ruleResposeDetailsVO = null;
 		List<ComputedFactsVO> computedFacts = null;
 		ComputedFactsVO computedFactsVO = null;
 		try {
-			LOGGER.info("RulesIdentifierService toComputeAMLData - ruleRequestVoObParam [{}]......", ruleRequestVoObParam);
-			LOGGER.info("RulesIdentifierService toComputeAMLData - ruleRequestVoObParam as String[{}]......", ruleRequestVoObParam.toString());
+			LOGGER.trace("Trans-ID : [{}] - Rule-ID : [{}] - RulesIdentifierService toComputeAMLData - ruleRequestVoObParam [{}]......", txnId,ruleId,ruleRequestVoObParam);
+			LOGGER.trace("Trans-ID : [{}] - Rule-ID : [{}] - RulesIdentifierService toComputeAMLData - ruleRequestVoObParam as String[{}]......",txnId,ruleId, ruleRequestVoObParam.toString());
 			if (ruleRequestVoObParam != null) {
-				//ruleResponseVoObj = new RuleResponseVo();
-				//ruleRespDtlObj = new ArrayList<RuleResposeDetailsVO>();
 				computedFacts = new ArrayList<ComputedFactsVO>();
 				ruleResposeDetailsVO = new RuleResposeDetailsVO();
-				
+				//Need to do for validate schema
+				if(ruleRequestVoObParam.getSchema() != null && ruleRequestVoObParam.getSchema().size() > 0
+						&& ruleRequestVoObParam.getFactSet() != null && ruleRequestVoObParam.getFactSet().size() > 0) {
+					LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - SCHEMA Details Process Block Called.....",txnId,ruleId);
+					for (Schema schemaobj : ruleRequestVoObParam.getSchema()) {
+						computedFactsVO = new ComputedFactsVO();
+						SchemaInterface schemaInterface = classLoaderUtil.getBean("SCHEMAService", SchemaInterface.class);
+						computedFactsVO = schemaInterface.getScheamExecutor(ruleRequestVoObParam, schemaobj, computedFacts);
+						computedFacts.add(computedFactsVO);
+					}
+				}
 				
 				if (ruleRequestVoObParam.getFactSet() != null && ruleRequestVoObParam.getFactSet().size() > 0) {
+					LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - FACT Details Procss Block Called.....",txnId,ruleId);
 					// Fact wise rule
 					for (Factset fact : ruleRequestVoObParam.getFactSet()) {
 						computedFactsVO = new ComputedFactsVO();
@@ -94,39 +93,32 @@ public class RulesIdentifierService {
 							computedFactsVO.setFieldTag(fact.getField());
 							computedFacts.add(computedFactsVO);
 						} else {
-							LOGGER.info("RuleRequestVo object is NULL recevie");
+							LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - RuleRequestVo object is NULL recevie",txnId,ruleId);
 						}
 					}
 				} 
-				
-				LOGGER.info("Schema Details >>>> : {} - FACT Set Details >>> : {}", ruleRequestVoObParam.getSchema(),ruleRequestVoObParam.getFactSet() );
-				
+				LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - Schema Details >>>> : {} - FACT Set Details >>> : {}", txnId,ruleId,ruleRequestVoObParam.getSchema(),ruleRequestVoObParam.getFactSet() );
 				
 				/*** Schema Base ****/
 				if (ruleRequestVoObParam.getSchema() != null && ruleRequestVoObParam.getSchema().size() > 0 
-						&& (ruleRequestVoObParam.getFactSet() == null 
-						|| ruleRequestVoObParam.getFactSet().size()==0)) {
+						&& (ruleRequestVoObParam.getFactSet() == null  || ruleRequestVoObParam.getFactSet().size()==0)) {
+					LOGGER.info("Trans-ID : [{}] - Rule-ID : [{}] - SIMPLE SCHEMA Details Procss Block Called....",txnId,ruleId);
 					for (Schema schemaobj : ruleRequestVoObParam.getSchema()) {
 						computedFactsVO = new ComputedFactsVO();
-						SchemaInterface schemaInterface = classLoaderUtil.getBean("SIMPLERULESService",
-								SchemaInterface.class);
-						computedFactsVO = schemaInterface.getScheamExecutor(ruleRequestVoObParam, schemaobj,
-								computedFacts);
+						SchemaInterface schemaInterface = classLoaderUtil.getBean("SIMPLERULESService", SchemaInterface.class);
+						computedFactsVO = schemaInterface.getScheamExecutor(ruleRequestVoObParam, schemaobj,computedFacts);
 						computedFacts.add(computedFactsVO);
 					}
 				}
-					
 			}
 
 			if (StringUtils.isNotBlank(ruleRequestVoObParam.getCustomerId()) && StringUtils.isNotBlank(ruleRequestVoObParam.getAccountNo())) {
-				
 				AccountDetailsParquetEntity customerEnityObj = accountServiceForParqute.getAccountDetailsFromParqute(null, ruleRequestVoObParam.getAccountNo());
 				//CustomerDetailsParquteEntity customerEnityObj = customerServiceForParqute.getCustParqueEntity(ruleRequestVoObParam.getCustomerId(), null);
 				if (customerEnityObj != null) {
 					ruleResposeDetailsVO.setAccountType(customerEnityObj.getAccounttype());
 					ruleResposeDetailsVO.setAccountStatus(customerEnityObj.getStatus());
 				}
-				
 			} else if (StringUtils.isNotBlank(ruleRequestVoObParam.getAccountNo())) {
 				AccountDetailsParquetEntity customerEnityObj = accountServiceForParqute.getAccountDetailsFromParqute(null, ruleRequestVoObParam.getAccountNo());
 				//CustomerDetailsParquteEntity customerEnityObj = customerServiceForParqute.getCustParqueEntity(ruleRequestVoObParam.getCustomerId(), null);
@@ -142,8 +134,6 @@ public class RulesIdentifierService {
 			} 
 			ruleResposeDetailsVO.setComputedFacts(computedFacts);
 			ruleResposeDetailsVO.setReqId(ruleRequestVoObParam.getReqId());
-			
-			
 			/*if (StringUtils.isNotBlank(ruleRequestVoObParam.getAccountNo())) {
 				AccountDetailsEntity customerEnityObj = accountDetailsService.getAccountDetails(ruleRequestVoObParam.getReqId(),null, ruleRequestVoObParam.getAccountNo());
 				if (customerEnityObj != null) {
@@ -159,15 +149,12 @@ public class RulesIdentifierService {
 				}
 			}*/ 
 			
-
 			// ruleRespDtlObj.add(ruleResposeDetailsVO);
 			// ruleResponseVoObj.setRuleResponse(ruleRespDtlObj);
 
 		} catch (Exception e) {
-			LOGGER.error("Exception found in RulesIdentifierService");
-		} finally {
-
-		}
+			LOGGER.error("Trans-ID : [{}] - Rule-ID : [{}] - Exception found in RulesIdentifierService : {}", txnId,ruleId,e);
+		} finally { }
 		return ruleResposeDetailsVO;
 	}
 }

@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("COUNT_DISTINCTService")
@@ -74,7 +75,7 @@ public class CountDistinctFact implements FactInterface{
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null,
 					AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range, hours);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCOuntDistcounterpartyAccountNo() != null) {
 
 				computedFactsVOObj.setFact(factName);

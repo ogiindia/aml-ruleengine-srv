@@ -24,6 +24,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNTService")
 public class CountFact implements FactInterface {
@@ -88,7 +89,7 @@ public class CountFact implements FactInterface {
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("LOW-CASH-PROFILE")) {
 
@@ -133,8 +134,7 @@ public class CountFact implements FactInterface {
 					}
 				}
 			} else {
-				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType, transMode, days,
-						months, factSetObj, range, hours);*/
+				/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType, transMode, days, months, factSetObj, range, hours);*/
 				dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 				if (dto != null && dto.getCountAmount() != null) {
 					computedFactsVOObj.setFact(factName);

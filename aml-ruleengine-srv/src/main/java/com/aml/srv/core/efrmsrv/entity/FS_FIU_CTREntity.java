@@ -24,7 +24,7 @@ public class FS_FIU_CTREntity implements Serializable{
 	
 	@Version
 	@Column(name ="VERSION")
-	private Long version;
+	private Integer version;
 	
 	@Column(name = "TRANSACTIONID")
 	private String transactionId;
@@ -70,6 +70,9 @@ public class FS_FIU_CTREntity implements Serializable{
 	
 	@Column(name = "CUSTOMER_ID")
 	private String customerId;
+	
+	@Column(name = "RULEID")
+	private String ruleId;
 
 	public Integer getId() {
 		return id;
@@ -199,12 +202,20 @@ public class FS_FIU_CTREntity implements Serializable{
 		this.customerId = customerId;
 	}
 
-	public Long getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 
-	public void setVersion(Long version) {
+	public void setVersion(Integer version) {
 		this.version = version;
+	}
+
+	public String getRuleId() {
+		return ruleId;
+	}
+
+	public void setRuleId(String ruleId) {
+		this.ruleId = ruleId;
 	}
 	
 }

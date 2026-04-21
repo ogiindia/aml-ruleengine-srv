@@ -18,6 +18,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("AVGERAGEService")
@@ -59,7 +60,7 @@ private Logger LOGGER = LoggerFactory.getLogger(CountFact.class);
 			//TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,transMode, days, months, factSetObj, range,hours);
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,null,days,months,hours);
 			dto = summarizationDataImpl.getTransSummarization(sumLstObj);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getAvgAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));

@@ -17,10 +17,10 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
-import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
-@Service("MAX_NON_CASH_TXNService")
+@Service("MAX_NONCASH_TXNService")
 public class MaxNonCashTxnFact implements FactInterface{
 
 
@@ -74,7 +74,7 @@ public class MaxNonCashTxnFact implements FactInterface{
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW,
 					transMode, days, months, factSetObj, range);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getMaxAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue((dto.getMaxAmount()));

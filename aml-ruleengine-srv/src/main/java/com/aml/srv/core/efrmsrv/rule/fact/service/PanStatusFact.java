@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("PAN_STATUSService")
@@ -61,7 +62,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 				panStatus ="NIL";
 				LOGGER.info("REQID : [{}] - retnVal : [{}]", reqId, panStatus);
 			}
-			computedFactsVOObj.setStrType("str");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 			if (panStatus != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setStrValue(panStatus);

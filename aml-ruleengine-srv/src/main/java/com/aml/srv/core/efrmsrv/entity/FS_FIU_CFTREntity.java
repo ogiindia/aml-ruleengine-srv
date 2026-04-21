@@ -21,38 +21,38 @@ public class FS_FIU_CFTREntity implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
 	private Integer id;
-	
+
 	@Version
-	@Column(name ="VERSION")
-	private Long version;
+	@Column(name = "VERSION")
+	private Integer version;
 
 	@Column(name = "TRANSACTIONID")
 	private String transactionId;
-	
+
 	@Column(name = "REPORT_TYPE")
 	private String reportType;
-	
+
 	@Column(name = "ENTITY_ID")
 	private String entityId;
-	
+
 	@Column(name = "BRANCH_CODE")
 	private String branchCode;
 
 	@Column(name = "DETECTION_DATE")
 	private String detectionDate;
-	
+
 	@Column(name = "DENOMINATION")
 	private String denomination;
-	
+
 	@Column(name = "QUANTITY")
 	private String quantity;
-	
+
 	@Column(name = "CUSTOMER_NAME")
 	private String customerName;
-	
+
 	@Column(name = "PAN")
 	private String pan;
-	
+
 	@Column(name = "CREATED_DATE")
 	private Timestamp createdDate;
 
@@ -64,6 +64,9 @@ public class FS_FIU_CFTREntity implements Serializable {
 
 	@Column(name = "CUSTOMER_ID")
 	private String customerId;
+	
+	@Column(name = "RULEID")
+	private String ruleId;
 
 	public Integer getId() {
 		return id;
@@ -177,11 +180,20 @@ public class FS_FIU_CFTREntity implements Serializable {
 		this.customerId = customerId;
 	}
 
-	public Long getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 
-	public void setVersion(Long version) {
+	public void setVersion(Integer version) {
 		this.version = version;
 	}
+
+	public String getRuleId() {
+		return ruleId;
+	}
+
+	public void setRuleId(String ruleId) {
+		this.ruleId = ruleId;
+	}
+	
 }

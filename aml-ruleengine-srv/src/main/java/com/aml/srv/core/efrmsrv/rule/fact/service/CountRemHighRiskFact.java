@@ -23,6 +23,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("COUNT_REM_HIGH_RISKService")
@@ -94,7 +95,7 @@ public class CountRemHighRiskFact implements FactInterface{
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
 
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				// dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType);
 				//dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj, reqId, false);

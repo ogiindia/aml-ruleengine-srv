@@ -24,6 +24,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SUM_CASH_TXNSService")
 public class SumCashTxnFact implements FactInterface {
@@ -89,7 +90,7 @@ public class SumCashTxnFact implements FactInterface {
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("LOW-CASH-PROFILE")) {
 					String profile = null;

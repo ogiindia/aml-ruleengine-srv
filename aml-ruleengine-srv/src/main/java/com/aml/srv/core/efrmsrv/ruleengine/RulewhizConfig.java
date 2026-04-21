@@ -28,6 +28,7 @@ import jakarta.annotation.PreDestroy;
 public class RulewhizConfig {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RulewhizConfig.class);
+	private static final Gson GSON = new Gson();
 	public List<NormalizedTblEntity> ruleEntity = new ArrayList<NormalizedTblEntity>();
 	public HashMap<String, String> ruleMvel = new HashMap<String, String>();
 	public HashMap<String, String> ruleJson = new HashMap<String, String>();
@@ -91,7 +92,7 @@ public class RulewhizConfig {
 			ruleJson.put(entity.getId(), entity.getPayload());
 			String MVELExpression = processMVEL(entity.getPayload());
 			ruleMvel.put(entity.getId(), MVELExpression);
-			LOGGER.info("MVELExpression - [{}] : [{}]", entity.getId(), MVELExpression);
+			LOGGER.info("From RULE Config - [PUT] MVELExpression - [{}] : [{}]", entity.getId(), MVELExpression);
 		}
 	}
 
@@ -102,72 +103,85 @@ public class RulewhizConfig {
 	 */
 	public String processMVEL(String payload) {
 		StringBuilder sb = new StringBuilder();
-		AMLRule rulepayload = new Gson().fromJson(payload, AMLRule.class);
+		AMLRule rulepayload = GSON.fromJson(payload, AMLRule.class);
 		int schemaCounter = 0;
 		int funcCounter = 0;
 		boolean schemaFlag = false;
 		for (Schema schema : rulepayload.getSchema()) {
 			schemaCounter += 1;
-			if ("between".equals(schema.getCondition())) {
+			String schemaTag = schema.getTag();
+			if (schemaCounter == 1) {
+				sb.append(" (");
+			}
+			if (schema.getCondition().equalsIgnoreCase("between")) {
+				LOGGER.trace("::::::::::::::::>>>IF - SCHEMA - CONDITION : {}", schema.getCondition());
 				schemaFlag = true;
 				sb.append(" (");
-				sb.append(schema.getTag());
+				sb.append(schemaTag);
 				String[] valuelist = schema.getValue().split(",");
-				sb.append(getExpression("greaterthanequals"));
+				sb.append(getExpression("greater_than_equal"));
 				// sb.append(valuelist[0]);
-				sb.append(toCheckKeyName(schema.getTag(), valuelist[0]));
+				sb.append(toCheckKeyName(schemaTag, valuelist[0]));
 				sb.append(" " + getExpression(schema.getJoinexpression()));
-				sb.append(" " + schema.getTag());
-				sb.append(getExpression("lesserthanequals"));
+				sb.append(" " + schemaTag);
+				sb.append(getExpression("lesser_than_equal"));
 				// sb.append(valuelist[1]);
-				sb.append(toCheckKeyName(schema.getTag(), valuelist[1]));
+				sb.append(toCheckKeyName(schemaTag, valuelist[1]));
 				sb.append(")");
+				LOGGER.trace("::::::::::::::::>>>IF - SCHEMA - SB : {}", sb.toString());
 			} else {
+				LOGGER.trace("::::::::::::::::>>>ELSE- SCHEMA - CONDITION : {}", schema.getCondition());
 				schemaFlag = true;
-				sb.append(" " + schema.getTag());
+				sb.append(" " + schemaTag);
 				sb.append(getExpression(schema.getCondition()));
 				// sb.append(schema.getValue());
-				sb.append(toCheckKeyName(schema.getTag(), schema.getValue()));
+				sb.append(toCheckKeyName(schemaTag, schema.getValue()));
 			}
 			if (!(schemaCounter == rulepayload.getSchema().size())) {
 				sb.append(" " + getExpression(schema.getJoinexpression()));
 			}
+			
 		}
-
+		if (schemaFlag)
+			sb.append(") ");
+		
 		if (rulepayload.getFunc().size() > 0) {
-			if (schemaFlag) {
-				sb.append(" " + getExpression("AND"));
-			}
+			if (schemaFlag) {sb.append(" " + getExpression("AND")); }
 		}
-
 		for (Func func : rulepayload.getFunc()) {
+			String funTag = func.getFact().toLowerCase()+"_"+func.getTag();
 			funcCounter += 1;
+			if (funcCounter == 1) {
+				sb.append(" (");
+			}
+			LOGGER.trace("::::::::::::::::>>>FACT - Operator : [{}]", func.getOperator());
 			if ("between".equals(func.getOperator())) {
 				sb.append(" (");
-				sb.append(func.getTag());
+				sb.append(funTag);
 				String[] valuelist = func.getValue().split(",");
-				sb.append(getExpression("greaterthanequals"));
+				sb.append(getExpression("greater_than_equal"));
 				// sb.append(valuelist[0]);
-				sb.append(toCheckKeyName(func.getTag(), valuelist[0]));
+				sb.append(toCheckKeyName(funTag, valuelist[0]));
 				sb.append(" " + getExpression(func.getJoinexpression()));
-				sb.append(" " + func.getTag());
-				sb.append(getExpression("lesserthanequals"));
+				sb.append(" " + funTag);
+				sb.append(getExpression("lesser_than_equal"));
 				// sb.append(valuelist[1]);
-				sb.append(toCheckKeyName(func.getTag(), valuelist[1]));
+				sb.append(toCheckKeyName(funTag, valuelist[1]));
 				sb.append(")");
 			} else {
-				sb.append(" " + func.getTag());
+				sb.append(" " + funTag);
 				sb.append(getExpression(func.getOperator()));
 				// sb.append("\""+func.getValue()+"\"");
-				sb.append(toCheckKeyName(func.getTag(), func.getValue()));
+				sb.append(toCheckKeyName(funTag, func.getValue()));
 			}
 
 			if (!(funcCounter == rulepayload.getFunc().size())) {
 				sb.append(" " + getExpression(func.getJoinexpression()));
 			}
-
 		}
-
+		if(funcCounter>=1) {
+			sb.append(")");
+		}
 		return sb.toString().trim();
 	}
 
@@ -230,7 +244,6 @@ public class RulewhizConfig {
 		default:
 			retVal = MyExpression.equals.getAction();
 		}
-
 		return retVal;
 	}
 }

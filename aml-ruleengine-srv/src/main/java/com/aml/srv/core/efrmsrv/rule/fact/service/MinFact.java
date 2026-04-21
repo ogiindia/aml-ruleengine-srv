@@ -20,6 +20,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("MINService")
 public class MinFact implements FactInterface {
@@ -66,8 +67,7 @@ public class MinFact implements FactInterface {
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
 			TransactionDetailsDTO dto = null;
-			computedFactsVOObj.setStrType("num");
-
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
 			transSrvSrchFilevoObj.setAccNo(accNo);
@@ -97,7 +97,6 @@ public class MinFact implements FactInterface {
 		} catch (Exception e) {
 			LOGGER.error("Exception found in MinFact@getFactExecutor : {}", e);
 		} finally {
-
 			LOGGER.info("REQID : [{}]::::::::::::MinFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;

@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SUM_OUTWARD_REMITTANCESService")
 public class SumOutwardRemittanceFact implements FactInterface {
@@ -72,7 +73,7 @@ public class SumOutwardRemittanceFact implements FactInterface {
 			transSrvSrchFilevoObj.setOthercurrencycode(true);
 			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			/**TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
 					transMode, days, months, factSetObj, range, hours);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);

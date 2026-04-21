@@ -32,6 +32,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNT_DEBIT_CREDITService")
 public class CountDebitCreditFact implements FactInterface {
@@ -90,7 +91,7 @@ public class CountDebitCreditFact implements FactInterface {
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
 			//TransactionDetailsDTO dto = null;
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();
 			transSrvSrchFilevoObj.setAccNo(accNo);
@@ -150,8 +151,8 @@ public class CountDebitCreditFact implements FactInterface {
 					AccountDetailsParquetEntity acctStatus = null;
 					accNo = requVoObjParam.getAccountNo();
 					custId = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);
 					}
@@ -165,7 +166,7 @@ public class CountDebitCreditFact implements FactInterface {
 						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
 								days, months, factSetObj, range, hours);*/
 						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-						computedFactsVOObj.setStrType("num");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 						if (dto != null && dto.getCountAmount() != null) {
 
 							computedFactsVOObj.setFact(factName);
@@ -186,8 +187,8 @@ public class CountDebitCreditFact implements FactInterface {
 							.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);*/
 					AccountDetailsParquetEntity acctDetails = null;
 					
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
 					}
@@ -201,7 +202,7 @@ public class CountDebitCreditFact implements FactInterface {
 						long daysBetween = ChronoUnit.DAYS.between(openDate, currentDate);
 						if (days != null && days >= daysBetween) {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
-							computedFactsVOObj.setStrType("num");
+							computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 							dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 							
 							/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,

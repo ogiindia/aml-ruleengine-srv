@@ -24,6 +24,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNT_LOCATIONSService")
 public class CountLocationFact implements FactInterface {
@@ -92,7 +93,7 @@ public class CountLocationFact implements FactInterface {
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
 			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("MULTIPLE_LOCATIONS")) {
 					String profile = null;

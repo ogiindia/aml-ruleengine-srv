@@ -14,8 +14,8 @@
 	<logger name="org.atmosphere" level="WARN" />
 	<logger name="org.springframework" level="WARN" />
 	<logger name="org.springframework.web" level="WARN" />
-	<logger name="org.springframework. boot" level="INFO" />
-	<logger name="org.springframework. security" level="INFO" />
+	<logger name="org.springframework.boot" level="INFO" />
+	<logger name="org.springframework.security" level="INFO" />
 	<logger name="org.springframework.cache" level="WARN" />
 	<logger name="com.zaxxer.hikari" level="INFO" />
 	<logger name="org.springframework.jdbc" level="INFO" />
@@ -31,23 +31,21 @@
 	<appender name="SYSOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<Pattern>
-				%d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread] %-5level
-				%logger{35}- %msg%n
+				%d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread] %-5level %logger{35}- %msg%n
 			</Pattern>
 		</encoder>
 	</appender>
 	<appender name="FILE-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/fis-core-api.log</file>
+		<file>${LOG_HOME}/fis-rule-engine.log</file>
 		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
 			<layout class="com.aml.srv.core.web.logging.MaskingPatternLayout">
 				<maskPrefix>(password=).{10}|(OTP-).{6}|(ending).{18}</maskPrefix>
-				<Pattern> %d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread]
-					%-5level %logger{35}- %msg%n </Pattern>
+				<Pattern> %d{yyyy-MM-dd HH:mm:ss.SSS} %-4relative [%thread] %-5level %logger{35}- %msg%n </Pattern>
 			</layout>
 		</encoder>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>
-				${LOG_HOME}/%d{yyyy-MM-dd}/fis-core-api.%d{}.%i.log.zip
+				${LOG_HOME}/%d{yyyy-MM-dd}/fis-rule-engine.%d{}.%i.log.zip
 			</fileNamePattern>
 			<timeBasedFileNamingAndTriggeringPolicy
 				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">

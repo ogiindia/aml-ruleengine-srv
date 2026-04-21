@@ -25,6 +25,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SUM_DEBIT_CREDITService")
 public class SumDebitCreditFact implements FactInterface {
@@ -89,7 +90,7 @@ public class SumDebitCreditFact implements FactInterface {
 			transSrvSrchFilevoObj.setTransType(transType);
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			//transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR); // Debit
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("NEW_ACCOUNT_CLOSED")) {
 					boolean newClosedflag = false;
@@ -137,7 +138,7 @@ public class SumDebitCreditFact implements FactInterface {
 						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null, transMode,
 								days, months, factSetObj, range, hours);*/
 						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-						computedFactsVOObj.setStrType("num");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 						if (dto != null && dto.getSumAmount() != null) {
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(dto.getSumAmount());

@@ -16,6 +16,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("AVG_CASH_WITHDRAWALSService")
 public class AvgCashWithdrawFact implements FactInterface {
@@ -62,7 +63,7 @@ public class AvgCashWithdrawFact implements FactInterface {
 			 * custId, accNo, null, null,AMLConstants.WITHDRAW, transMode, days, months,
 			 * factSetObj, range);
 			 */
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getAvgAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));

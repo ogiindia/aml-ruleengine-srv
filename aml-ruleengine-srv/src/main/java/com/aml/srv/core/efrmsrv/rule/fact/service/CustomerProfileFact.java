@@ -21,6 +21,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("CUSTOMER_PROFILEService")
 public class CustomerProfileFact implements FactInterface {
@@ -95,11 +96,11 @@ public class CustomerProfileFact implements FactInterface {
 					if (profile != null) {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue(profile);
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NIL");
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					}
 
 					/*
@@ -148,11 +149,11 @@ public class CustomerProfileFact implements FactInterface {
 					if (profile != null) {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue(profile);
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NIL");
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					}
 				} else if (condition.equals("LOW-CASH-PROFILE")) {
 					String profile = null;
@@ -180,11 +181,11 @@ public class CustomerProfileFact implements FactInterface {
 					if (profile != null) {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue(profile);
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					} else {
 						computedFactsVOObj.setFact(factName);
 						computedFactsVOObj.setStrValue("NIL");
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					}
 				} else {LOGGER.debug("REQID : [{}] - Given Fact Not Match....",requVoObjParam.getReqId()); }
 

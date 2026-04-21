@@ -230,44 +230,64 @@ public class CommonUtils {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(datatimeLong));
 	}
 
-	public ConcurrentHashMap<String, Object> toConvertJson2Map(AMLRule ruleDetails,Long threadId) {
+	public ConcurrentHashMap<String, Object> toConvertJson2Map(AMLRule ruleDetails,Long threadId, String txnId, String ruleId) {
 		ConcurrentHashMap<String, Object> concurtMap = null;
 		try {
 			concurtMap = new ConcurrentHashMap<>();
-			
 			for (Schema schema : ruleDetails.getSchema()) {
-				concurtMap.put(schema.getTag(), schema.getValue());
+				String schemaTag = schema.getTag();
+				concurtMap.put(schemaTag, schema.getValue());
 			}
 			for(Func func : ruleDetails.getFunc()) {
-				concurtMap.put(func.getTag(), func.getValue());
+				String funTag = func.getFact().toLowerCase()+"_"+func.getTag();
+				concurtMap.put(funTag, func.getValue());
 			}
 		} catch (Exception e) {
-			Logger.error("Thread Id : [{}] - Exception found in toConvertJson2Map : {}", threadId, e);
+			Logger.error("Trans-ID : [{}] - Rule-ID : [{}] - Thread Id : [{}] - Exception found in toConvertJson2Map : {}", txnId,ruleId,threadId, e);
 		}
-		Logger.info("Thread Id : [{}] - MVEL Concurrent Map : {}", threadId, concurtMap);
+		Logger.info("Trans-ID : [{}] - Rule-ID : [{}] - Thread Id : [{}] - MVEL Concurrent Map : {}", txnId,ruleId,threadId, concurtMap);
 		return concurtMap;
 	}
 
-	public ConcurrentHashMap<String, Object> toUpdateConcurtMap(ConcurrentHashMap<String, Object> mvelConcurntMap,
-			RuleResposeDetailsVO ruleRespDtlVOObj,Long threadId) {
+	public ConcurrentHashMap<String, Object> toUpdateConcurtMap(ConcurrentHashMap<String, Object> mvelConcurntMap, RuleResposeDetailsVO ruleRespDtlVOObj,Long threadId,String txnId, String ruleId) {
 		List<ComputedFactsVO> factLst = null;
 		try {
 			if(ruleRespDtlVOObj!=null) {
 				factLst = ruleRespDtlVOObj.getComputedFacts();
-				for (ComputedFactsVO fact : factLst) {
-
-					if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_STR)) {
-						if (fact.getValue() != null && fact.getFieldTag() != null) {
-							mvelConcurntMap.replace(fact.getFieldTag(), fact.getStrValue());
+				if (factLst != null && factLst.size() > 0) {
+					for (ComputedFactsVO fact : factLst) {
+						String funTag = null;
+						if(fact.getFact()!=null && StringUtils.isNotBlank(fact.getFact())) {
+							 funTag = fact.getFact().toLowerCase()+"_"+fact.getFieldTag();
+							if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_STR)) {
+								if (fact.getValue() != null && fact.getFieldTag() != null) {
+									//mvelConcurntMap.replace(fact.getFieldTag(), fact.getStrValue());
+									mvelConcurntMap.replace(funTag, fact.getStrValue());
+								}
+							}
+		
+							if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_NUM)) {
+								if (fact.getValue() != null && fact.getFieldTag() != null) {
+									//mvelConcurntMap.replace(fact.getFieldTag(), fact.getValue());
+									mvelConcurntMap.replace(funTag, fact.getValue());
+								}
+							}
+						}  else if(fact.getFieldTag()!=null) {
+							 funTag = fact.getFieldTag();
+							if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_STR)) {
+								if (fact.getValue() != null && fact.getFieldTag() != null) {
+									//mvelConcurntMap.replace(fact.getFieldTag(), fact.getStrValue());
+									mvelConcurntMap.replace(funTag, fact.getStrValue());
+								}
+							}
+		
+							if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_NUM)) {
+								if (fact.getValue() != null && fact.getFieldTag() != null) {
+									//mvelConcurntMap.replace(fact.getFieldTag(), fact.getValue());
+									mvelConcurntMap.replace(funTag, fact.getValue());
+								}
+							}
 						}
-					}
-
-					if (StringUtils.isNotBlank(fact.getStrType()) && fact.getStrType().equalsIgnoreCase(RuleWhizConstants.VALUE_NUM)) {
-						if (fact.getValue() != null && fact.getFieldTag() != null) {
-							mvelConcurntMap.replace(fact.getFieldTag(), fact.getValue());
-						}
-					} else {
-						
 					}
 				}
 				if (mvelConcurntMap.containsKey(RuleWhizConstants.ACCTYPE)) {
@@ -277,12 +297,10 @@ public class CommonUtils {
 				}
 			}
 			
-			Logger.info("Thread Id : [{}] - Final Map After Response : {}",threadId, mvelConcurntMap);
+			Logger.info("Trans-ID : [{}] - Rule-ID : [{}] - Thread Id : [{}] - Final Map After Response in toUpdateConcurtMap: {}",txnId,ruleId,threadId, mvelConcurntMap);
 		} catch (Exception e) {
-			Logger.error("Thread Id : [{}] - Exception found in toUpdateConcurtMap : {}", threadId, e);
-		} finally {
-			factLst = null;
-		}
+			Logger.error("Trans-ID : [{}] - Rule-ID : [{}] - Thread Id : [{}] - Exception found in toUpdateConcurtMap : {}", txnId,ruleId,threadId, e);
+		} finally { factLst = null; }
 		return mvelConcurntMap;
 	}
 	

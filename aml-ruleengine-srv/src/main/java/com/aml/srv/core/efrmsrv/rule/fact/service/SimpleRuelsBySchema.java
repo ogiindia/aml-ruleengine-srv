@@ -15,6 +15,7 @@ import com.aml.srv.core.efrmsrv.rule.intr.SchemaInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.ruleengine.Schema;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SIMPLERULESService")
 public class SimpleRuelsBySchema implements SchemaInterface {
@@ -33,26 +34,18 @@ public class SimpleRuelsBySchema implements SchemaInterface {
 		ComputedFactsVO computedFactsVOObj = null;
 		try {
 			computedFactsVOObj =  new ComputedFactsVO();
-			if(scheam!=null) {
-				String tagName = scheam.getTag();
-				String value = scheam.getValue();
-				String conndition =  scheam.getCondition();
-				String joinExpression =  scheam.getJoinexpression();
-				String type =  scheam.getType();
-				
+			if(scheam!=null) {				
 				dto = transactionServiceForParqute.getTransDtoFromParqute(scheam,requVoObjParam.getReqId(), requVoObjParam.getAccountNo(), requVoObjParam.getTxnId(), requVoObjParam.getCustomerId());
 				if (dto != null && dto.size() > 0) {
-					computedFactsVOObj.setStrType("num");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 					computedFactsVOObj.setFact("SIMPLERULES");
 					computedFactsVOObj.setValue(new BigDecimal(dto.size()));
 				} else {
-					computedFactsVOObj.setStrType("num");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 					computedFactsVOObj.setFact("SIMPLERULES");
 					computedFactsVOObj.setValue(new BigDecimal(0));
 				}
-				
 			}
-
 		} catch (Exception e) {
 			LOGGER.error("Exception found in SimpleRuelsBySchema@processOfReq : {}", e);
 		} finally {
@@ -60,5 +53,4 @@ public class SimpleRuelsBySchema implements SchemaInterface {
 		}
 		return computedFactsVOObj;
 	}
-
 }

@@ -19,6 +19,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("INACTIVE_PERIODService")
 public class InactivePeriodFact implements FactInterface {
@@ -77,7 +78,7 @@ public class InactivePeriodFact implements FactInterface {
 			
 			trnsSrvSrchfldvo.setWithdarwDeposit(AMLConstants.DR);
 			TransactionDetailsDTO dto = transactionServiceForParqute.getTransactionDetails(trnsSrvSrchfldvo, reqId, false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCountAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);

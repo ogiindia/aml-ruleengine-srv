@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNT_ACC_TO_ACC_TRANSFERSService")
 public class CountAccountToAccountTxnFact implements FactInterface {
@@ -75,7 +76,7 @@ public class CountAccountToAccountTxnFact implements FactInterface {
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,
 					AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCountAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));

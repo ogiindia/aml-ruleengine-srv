@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.aml.srv.core.efrm.parquet.entity.AccountDetailsParquetEntity;
 import com.aml.srv.core.efrm.parquet.entity.BankandBranchDetailsParquetEntity;
 import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Component
 public class AccountServiceForParquet {
@@ -26,6 +27,13 @@ public class AccountServiceForParquet {
 	@Autowired
 	BranchServiceForParquet branchServiceForParquet;
 	
+	/**
+	 * 
+	 * @param reqId
+	 * @param accNo
+	 * @param custId
+	 * @return
+	 */
 	public String getAccountOpeningAndClosingDate(String reqId, String accNo, String custId) {
 		SearchFieldsDTO srchDto =  null;
 		List<AccountDetailsParquetEntity> lstAc = null;
@@ -33,8 +41,8 @@ public class AccountServiceForParquet {
 		String closingDate=null;
 		String combinedStr=null;
 		try {
-			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-			lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+			lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 			if (lstAc != null && lstAc.size() > 0) {
 				AccountDetailsParquetEntity acc = lstAc.get(0);
 				if (acc != null && acc.getAccountopeneddate() != null) {
@@ -54,24 +62,36 @@ public class AccountServiceForParquet {
 		return combinedStr;
 	}
 	
+	/**
+	 * 
+	 * @param custId
+	 * @param accNo
+	 * @return
+	 */
 	public AccountDetailsParquetEntity getAccountDetailsFromParqute(String custId, String accNo) {
 		AccountDetailsParquetEntity accountDtlParqEtyObj = null;
 		SearchFieldsDTO srchDto =  null;
 		List<AccountDetailsParquetEntity> lstAc = null;
 		try {
-			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-			lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+			srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+			lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 			if (lstAc != null && lstAc.size() > 0) {
 				accountDtlParqEtyObj = lstAc.get(0);
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in AccountServiceForParqute@getAccountDetailsFromParqute : {}",e);
 		} finally {
-			srchDto =  null;  lstAc = null;
+			srchDto = null; lstAc = null;
 		}
 		return accountDtlParqEtyObj;
 	}
 	
+	/**
+	 * 
+	 * @param accNo
+	 * @param reqId
+	 * @return
+	 */
 	public TransactionAccountCustDetailsDAO getCustIdfromAccounts(String accNo, String reqId) {
 		TransactionAccountCustDetailsDAO transAccCustObj = null;
 		AccountDetailsParquetEntity accDtslParqEntityObj = null;
@@ -100,10 +120,7 @@ public class AccountServiceForParquet {
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in AccountServiceForParqute@getCustIdfromAccounts : {}",e);
-		}finally {
-			accDtslParqEntityObj = null; custDetailsParEntObj = null;
-		}
+		}finally { accDtslParqEntityObj = null; custDetailsParEntObj = null; }
 		return transAccCustObj;
 	}
-	
 }

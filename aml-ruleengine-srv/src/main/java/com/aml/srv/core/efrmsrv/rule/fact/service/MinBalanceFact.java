@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("MIN_BALANCEService")
@@ -73,7 +74,7 @@ public class MinBalanceFact implements FactInterface{
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, null, null,null,
 					transMode, days, months, factSetObj, range);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getMinAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);

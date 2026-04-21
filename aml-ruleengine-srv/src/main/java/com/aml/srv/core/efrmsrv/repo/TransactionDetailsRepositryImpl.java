@@ -38,12 +38,12 @@ public class TransactionDetailsRepositryImpl {
 	@Autowired
 	EntityManager entityManager;
 
-	
 	@Autowired
 	CustomerDetailsRepoImpl customerDetailsRepoImpl;
-	
+
 	@Autowired
 	AccountDetailsRepoImpl accountDetailsRepoImpl;
+
 	/**
 	 * 
 	 * @param reqId
@@ -55,13 +55,15 @@ public class TransactionDetailsRepositryImpl {
 	 * @param fieldName
 	 * @return getSumValue Integer
 	 */
-	public BigDecimal getSumValue(String reqId, String accNo, String custId, String transMode, String transType, Integer hours, Integer days, Integer months,  String fieldName, String columnName,Range range,Factset faceset) {
+	public BigDecimal getSumValue(String reqId, String accNo, String custId, String transMode, String transType,
+			Integer hours, Integer days, Integer months, String fieldName, String columnName, Range range,
+			Factset faceset) {
 		LOGGER.info("REQID : [{}] - TransactionDetailsRepositryImpl@getSumValue method called...........", reqId);
 		BigDecimal retnVal = null;
 		CriteriaBuilder cb = null;
 		List<Predicate> predicates = null;
 		CriteriaQuery<Object[]> cq = null;
-		boolean condition=false;
+		boolean condition = false;
 		Root<TransactionDetailsEntity> rootBk = null;
 		try {
 			cb = entityManager.getCriteriaBuilder();
@@ -81,92 +83,81 @@ public class TransactionDetailsRepositryImpl {
 			if (StringUtils.isNotBlank(transMode)) {
 				predicates.add(cb.equal(rootBk.get("channelType"), transMode));
 			}
-			
-			if(faceset!=null && faceset.getCondition()!=null)
-			{
-			
-				if(faceset.getCondition().equals("NONINDIVIDUAL"))
-				{
+
+			if (faceset != null && faceset.getCondition() != null) {
+
+				if (faceset.getCondition().equals("NONINDIVIDUAL")) {
 					if (StringUtils.isNotBlank(custId)) {
-						CustomerDetailsEntity custDetails=customerDetailsRepoImpl.getCustomerDetailsByCustId(custId);
-						if(custDetails!=null)
-						{
-							if(custDetails.getCustomerType()!=null)
-							{
-								if("NONINDIVIDUAL".equals(custDetails.getCustomerType()))
-								{
-									condition=true;
+						CustomerDetailsEntity custDetails = customerDetailsRepoImpl.getCustomerDetailsByCustId(custId);
+						if (custDetails != null) {
+							if (custDetails.getCustomerType() != null) {
+								if ("NONINDIVIDUAL".equals(custDetails.getCustomerType())) {
+									condition = true;
 								}
 							}
 						}
-						
-					}
-					else if (StringUtils.isNotBlank(accNo)) {
-						AccountDetailsEntity acctDetails=accountDetailsRepoImpl.getAccountDetailsByritiria(reqId, accNo, custId);
-						if(acctDetails!=null && acctDetails.getCustomerId()!=null)
-						{
-							CustomerDetailsEntity custDetails=customerDetailsRepoImpl.getCustomerDetailsByCustId(String.valueOf(acctDetails.getCustomerId()));	
-							if(custDetails.getCustomerType()!=null)
-							{
-								if("NONINDIVIDUAL".equals(custDetails.getCustomerType()))
-								{
-									condition=true;
+
+					} else if (StringUtils.isNotBlank(accNo)) {
+						AccountDetailsEntity acctDetails = accountDetailsRepoImpl.getAccountDetailsByritiria(reqId,
+								accNo, custId);
+						if (acctDetails != null && acctDetails.getCustomerId() != null) {
+							CustomerDetailsEntity custDetails = customerDetailsRepoImpl
+									.getCustomerDetailsByCustId(String.valueOf(acctDetails.getCustomerId()));
+							if (custDetails.getCustomerType() != null) {
+								if ("NONINDIVIDUAL".equals(custDetails.getCustomerType())) {
+									condition = true;
 								}
 							}
 						}
 					}
-					
-					
-					if(!condition)
-					{
-						return new BigDecimal(0); 
+
+					if (!condition) {
+						return new BigDecimal(0);
 					}
-					
+
 				}
-				
-				
-				
+
 			}
-			
-			
+
 			LOGGER.info("REQID : [{}] - No of days : [{}]", reqId, days);
 
-			 if (range != null) {
-					if (range.getMin() != null && range.getMax() != null) {
-						predicates.add(cb.between(rootBk.get("amount"), range.getMin(), range.getMax()));
-					}
-					else if (range.getMin() != null) {
-					    // Only min present → greaterThanOrEqualTo
-					    predicates.add(cb.greaterThanOrEqualTo(rootBk.get("amount"), range.getMin()));
-					} else if (range.getMax() != null) {
-					    // Only max present → lessThanOrEqualTo
-					    predicates.add(cb.lessThanOrEqualTo(rootBk.get("amount"), range.getMax()));
-					}
-
+			if (range != null) {
+				if (range.getMin() != null && range.getMax() != null) {
+					predicates.add(cb.between(rootBk.get("amount"), range.getMin(), range.getMax()));
+				} else if (range.getMin() != null) {
+					// Only min present → greaterThanOrEqualTo
+					predicates.add(cb.greaterThanOrEqualTo(rootBk.get("amount"), range.getMin()));
+				} else if (range.getMax() != null) {
+					// Only max present → lessThanOrEqualTo
+					predicates.add(cb.lessThanOrEqualTo(rootBk.get("amount"), range.getMax()));
 				}
 
+			}
+
 			if (days != null) {
-				//Expression<java.sql.Date> txnDateAsDate = cb.function("TRANS_DATE", java.sql.Date.class, rootBk.get("transactionDate"), cb.literal("YYYY-MM-DD") // format of stored string);
-				
-			/*	Expression<java.sql.Date> txnDateAsDate =
-					    cb.function("TO_DATE", java.sql.Date.class,
-					        rootBk.get("transactionDate"),
-					        cb.literal("YYYY-MM-DD"));
-				*/
+				// Expression<java.sql.Date> txnDateAsDate = cb.function("TRANS_DATE",
+				// java.sql.Date.class, rootBk.get("transactionDate"), cb.literal("YYYY-MM-DD")
+				// // format of stored string);
+
+				/*
+				 * Expression<java.sql.Date> txnDateAsDate = cb.function("TO_DATE",
+				 * java.sql.Date.class, rootBk.get("transactionDate"),
+				 * cb.literal("YYYY-MM-DD"));
+				 */
 				LocalDate currentDateTdy = LocalDate.now();
 				LocalDate stDate = currentDateTdy.minusDays(days);
 				// Convert LocalDate to String in same format as DB
-				 String todayStr = currentDateTdy.toString(); // yyyy-MM-dd
+				String todayStr = currentDateTdy.toString(); // yyyy-MM-dd
 				String startDateStr = stDate.toString();
-				//LOGGER.info("REQID : [{}] - columnName is : [{}]", reqId, stDate);
+				// LOGGER.info("REQID : [{}] - columnName is : [{}]", reqId, stDate);
 //				LOGGER.info("REQID : [{}] - columnName is : [{}]", reqId, String.valueOf(stDate));
 //				LOGGER.info("REQID : [{}] - columnName is : [{}]", reqId, String.valueOf(currentDateTdy));
-				LOGGER.info("REQID : [{}] - Current / today Date : [{}]  startDateStr : [{}]", reqId, todayStr,startDateStr);
-				Expression<java.sql.Date> txnDateAsDate =
-					    cb.function("to_Date", java.sql.Date.class,
-					        rootBk.get("transactionDate"),
-					        cb.literal("YYYY-MM-DD"));	
-				Predicate betweenDates = cb.between(txnDateAsDate, java.sql.Date.valueOf(startDateStr), java.sql.Date.valueOf(todayStr));
+				LOGGER.info("REQID : [{}] - Current / today Date : [{}]  startDateStr : [{}]", reqId, todayStr,
+						startDateStr);
+				Expression<java.sql.Date> txnDateAsDate = cb.function("to_Date", java.sql.Date.class,
+						rootBk.get("transactionDate"), cb.literal("YYYY-MM-DD"));
+				Predicate betweenDates = cb.between(txnDateAsDate, java.sql.Date.valueOf(startDateStr),
+						java.sql.Date.valueOf(todayStr));
 				predicates.add(betweenDates);
 			}
 			LOGGER.info("REQID : [{}] - columnName is : [{}]", reqId, columnName);
@@ -175,8 +166,8 @@ public class TransactionDetailsRepositryImpl {
 				cq.multiselect(cb.count(rootBk), cb.sum(rootBk.get("amount")));
 				Object[] result = entityManager.createQuery(cq).getSingleResult();
 				if (result != null && result.length > 1) {
-					BigDecimal value=  (BigDecimal) result[1];
-					retnVal=value;
+					BigDecimal value = (BigDecimal) result[1];
+					retnVal = value;
 					LOGGER.info("REQID : [{}] - retnVal : [{}]", reqId, retnVal);
 				} else {
 					retnVal = new BigDecimal(0);

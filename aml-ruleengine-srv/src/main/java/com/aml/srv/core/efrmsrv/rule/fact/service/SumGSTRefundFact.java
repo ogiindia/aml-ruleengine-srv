@@ -23,6 +23,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SUM_GST_REFUNDService")
 public class SumGSTRefundFact implements FactInterface {
@@ -104,7 +105,7 @@ public class SumGSTRefundFact implements FactInterface {
 							}
 						}
 					}
-					computedFactsVOObj.setStrType("num");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 					if (profile != null) {
 						/*dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
 								transMode, days, months, factSetObj, range, hours);*/

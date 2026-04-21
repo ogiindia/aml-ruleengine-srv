@@ -11,6 +11,6 @@ import jakarta.data.repository.Repository;
 @Repository
 public interface FS_FIU_NTR_Repository<T> extends JpaRepository<FS_FIU_NTREntity, Integer> {
 
-	Optional<FS_FIU_NTREntity> findByTransactionIdAndReportType(String transactionId, String reportType);
+	Optional<FS_FIU_NTREntity> findByTransactionIdAndReportTypeAndRuleId(String transactionId, String reportType, String ruleId);
 
 }

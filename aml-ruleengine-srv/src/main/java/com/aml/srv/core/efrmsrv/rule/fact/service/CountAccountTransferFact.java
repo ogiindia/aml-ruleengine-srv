@@ -17,11 +17,12 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNT_ACCOUNT_TRANSFERSService")
 public class CountAccountTransferFact implements FactInterface {
 
-	private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
+	private Logger LOGGER = LoggerFactory.getLogger(CountAccountTransferFact.class);
 
 	/*
 	 * @Autowired TransactionService transactionService;
@@ -74,7 +75,7 @@ public class CountAccountTransferFact implements FactInterface {
 					AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range);*/
 			
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCountAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));

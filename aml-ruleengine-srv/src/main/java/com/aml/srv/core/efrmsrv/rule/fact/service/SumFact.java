@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("SUMService")
 public class SumFact implements FactInterface {
@@ -33,7 +34,7 @@ public class SumFact implements FactInterface {
 			List<ComputedFactsVO> computedFacts) {
 
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::CountFact@getFactExecutor (ENTRY) Called::::::::::",
+		LOGGER.info("REQID : [{}]::::::::::::SumFact@getFactExecutor (ENTRY) Called::::::::::",
 				requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
@@ -71,14 +72,17 @@ public class SumFact implements FactInterface {
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, transType,
 					transMode, days, months, factSetObj, range, hours);*/
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-			computedFactsVOObj.setStrType("num");
+			LOGGER.info("Response From Transaction Parquet - dto : {}", dto);
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getSumAmount() != null) {
+				LOGGER.info("Response From Transaction Parquet - IF - dto : {}", dto.getSumAmount());
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue((dto.getSumAmount()));
 			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
+			
 		} catch (Exception e) {
 			LOGGER.error("Exception found in SumFact@getFactExecutor : {}", e);
 		} finally {

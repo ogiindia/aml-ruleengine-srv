@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("OUTWARD_FOREIGN_REMITTANCEService")
 public class OutwardForeignRemittanceFact implements FactInterface {
@@ -73,7 +74,7 @@ public class OutwardForeignRemittanceFact implements FactInterface {
 					transMode, true, days, months, factSetObj, range, false);*/
 			
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getTxnAmount() != null) {
 
 				computedFactsVOObj.setFact(factName);

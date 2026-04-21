@@ -18,10 +18,10 @@ import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
-@Service("COUNT_DISTINCT_ACCOUNTSService")
-public class CountDistinctAccountFact implements FactInterface{
+@Service("SUM_INTERACCOUNT_TXNSService")
+public class SumOfIntraAccountTransferFact  implements FactInterface {
 
-	private Logger LOGGER = LoggerFactory.getLogger(CountDistinctAccountFact.class);
+	private Logger LOGGER = LoggerFactory.getLogger(SumOfIntraAccountTransferFact.class);
 	
 	@Autowired
 	TransactionServiceForParqute transactionServiceForParqute;
@@ -31,7 +31,7 @@ public class CountDistinctAccountFact implements FactInterface{
 			List<ComputedFactsVO> computedFacts) {
 		
 		ComputedFactsVO computedFactsVOObj = null;
-		LOGGER.info("REQID : [{}]::::::::::::CountDistinctAccountFact@getFactExecutor (ENTRY) Called::::::::::", requVoObjParam.getReqId());
+		LOGGER.info("REQID : [{}]::::::::::::CountAccountTransferFact@getFactExecutor (ENTRY) Called::::::::::", requVoObjParam.getReqId());
 		String factName = null, accNo = null, custId = null, transMode = null, transType = null, txnTime = null,
 				txnId = null, reqId = null;
 		TransactionDetailsDTO dto = null;
@@ -74,18 +74,18 @@ public class CountDistinctAccountFact implements FactInterface{
 			
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
 			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
-			if (dto != null && dto.getCOuntDistcounterpartyAccountNo() != null) {
+			if (dto != null && dto.getSumAmount() != null) {
 				computedFactsVOObj.setFact(factName);
-				computedFactsVOObj.setValue(new BigDecimal(dto.getCOuntDistcounterpartyAccountNo()));
+				computedFactsVOObj.setValue(dto.getSumAmount());
 			} else {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(0));
 			}
 		} catch (Exception e) {
-			LOGGER.error("Exception found in CountDistinctAccountFact@getFactExecutor : {}", e);
+			LOGGER.error("Exception found in CountAccountTransferFact@getFactExecutor : {}", e);
 		} finally {
 
-			LOGGER.info("REQID : [{}]::::::::::::CountDistinctAccountFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::CountAccountTransferFact@getFactExecutor (EXIT) End::::::::::\n\n",requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}

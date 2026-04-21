@@ -23,6 +23,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("TOTAL_CREDITSService")
 public class TotalCreditFact implements FactInterface {
@@ -85,7 +86,7 @@ public class TotalCreditFact implements FactInterface {
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("LOW-CASH-PROFILE")) {
 					String profile = null;

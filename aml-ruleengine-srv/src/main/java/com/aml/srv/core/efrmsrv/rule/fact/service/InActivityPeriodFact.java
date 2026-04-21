@@ -22,6 +22,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("INACTIVITY_PERIODService")
@@ -66,15 +67,15 @@ private Logger LOGGER = LoggerFactory.getLogger(InActivityPeriodFact.class);
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
 			TransactionDetailsDTO dto =null;
-			computedFactsVOObj.setStrType("str");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 			computedFactsVOObj.setFact(factName);
 			if (condition != null) {
 				if (condition.equals("NEW_ACCOUNT")) {
 					AccountDetailsParquetEntity acctDetails = null;
 					//AccountDetailsEntity acctDetails = accountDetailsService.getAccountDetails(requVoObjParam.getReqId(), accNo, custId);
 					SearchFieldsDTO srchDto = new SearchFieldsDTO(custId, accNo, null, null, null, null, null, null,
-							null, null, null,null,null,null,null,null,null);
-					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+							null, null, null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctDetails = lstAc.get(0);
 					}
@@ -85,7 +86,7 @@ private Logger LOGGER = LoggerFactory.getLogger(InActivityPeriodFact.class);
 						LocalDate openDate = LocalDate.parse(acctDetails.getAccountopeneddate(), formatter);
 						LocalDate currentDate = LocalDate.now();
 						System.out.println(openDate); // Output: 2025-05-20
-						computedFactsVOObj.setStrType("str");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 						long daysBetween = ChronoUnit.DAYS.between(openDate, currentDate);
 						if (days != null && days >= daysBetween) {
 							computedFactsVOObj.setAcc_open_date(acctDetails.getAccountopeneddate());
@@ -109,8 +110,8 @@ private Logger LOGGER = LoggerFactory.getLogger(InActivityPeriodFact.class);
 				//AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo, reqId);
 				AccountDetailsParquetEntity acctStatus = null;
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(null, accNo, null, null, null, null, null, null, null,
-						null, null, null,null,null,null,null,null);
-				List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS",
+						null, null, null,null,null,null,null,null,null);
+				List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS,
 						AccountDetailsParquetEntity.class, srchDto, null);
 				if (lstAc != null && lstAc.size() > 0) {
 					acctStatus = lstAc.get(0);
@@ -118,7 +119,7 @@ private Logger LOGGER = LoggerFactory.getLogger(InActivityPeriodFact.class);
 				if (acctStatus != null && acctStatus.getStatus() != null) {
 					computedFactsVOObj.setFact(factName);
 					computedFactsVOObj.setStrValue(acctStatus.getStatus());
-					computedFactsVOObj.setStrType("str");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 				}
 			}
 		} catch (Exception e) {

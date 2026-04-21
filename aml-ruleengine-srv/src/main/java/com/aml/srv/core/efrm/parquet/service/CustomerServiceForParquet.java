@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.aml.srv.core.efrm.parquet.entity.CustomerDetailsParquetEntity;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Component
 public class CustomerServiceForParquet {
@@ -26,8 +27,8 @@ public class CustomerServiceForParquet {
 		CustomerDetailsParquetEntity custDtlParEnty = null;
 		SearchFieldsDTO srchDto = null;
 		try {
-			srchDto =  new SearchFieldsDTO(custId, accno, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-			List<CustomerDetailsParquetEntity> lstcustObj = parquetService.executeQueryReturnEntity("CUSTOMERS", CustomerDetailsParquetEntity.class, srchDto, null);
+			srchDto =  new SearchFieldsDTO(custId, accno, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+			List<CustomerDetailsParquetEntity> lstcustObj = parquetService.executeQueryReturnEntity(RuleWhizConstants.CUSTOMERS, CustomerDetailsParquetEntity.class, srchDto, null);
 			if (lstcustObj != null && lstcustObj.size() > 0) {
 				custDtlParEnty = lstcustObj.get(0);
 			}

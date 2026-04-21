@@ -26,6 +26,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("CASH_DEPOSIT_LOCATIONService")
@@ -99,7 +100,7 @@ public class CashDepositLocationFact implements FactInterface{
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
 			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR);
 			//List<TransactionDetailsEntity>  dto =null;
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (StringUtils.isNotBlank(condition) && condition.equalsIgnoreCase("OUTSIDE_MAOIST")) {
 
 				String profile = null;

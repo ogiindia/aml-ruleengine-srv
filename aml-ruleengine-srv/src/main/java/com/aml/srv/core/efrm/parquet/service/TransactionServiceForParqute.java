@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +29,7 @@ import com.aml.srv.core.efrmsrv.rule.service.RulesUtils;
 import com.aml.srv.core.efrmsrv.ruleengine.Schema;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
 import com.aml.srv.core.efrmsrv.utils.DateFormatUtils;
-
-import jakarta.persistence.criteria.Predicate;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 /**
  * Transaction Service For Fetch Data from Parqute Service
@@ -36,7 +37,6 @@ import jakarta.persistence.criteria.Predicate;
 @Component
 public class TransactionServiceForParqute {
 
-	
 	private Logger LOGGER = LoggerFactory.getLogger(TransactionServiceForParqute.class);
 	
 	@Autowired
@@ -52,7 +52,11 @@ public class TransactionServiceForParqute {
 	private String amlDeployedCountryCode;
 	
 	 
-	 
+	/**
+	  * 
+	  * @param days
+	  * @return
+	  */
 	public List<TransactionParquetMppaing> getTransDetailsFromProperty(Integer days) {
 		List<TransactionParquetMppaing> trasParMapLst = null;
 		String todayStr = null;
@@ -65,13 +69,13 @@ public class TransactionServiceForParqute {
 			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
 			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
 			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, null, null, null, null,
-					null, null, null, null, null,null,null,null,null);
+					null, null, null, null, null,null,null,null,null,null);
 						
 			String yearStr  = String.valueOf(stDate.getYear());
 			String monthStr = String.format("%02d", stDate.getMonthValue());
 			String dateStr  = String.format("%02d", stDate.getDayOfMonth());
 			String parqutePath = yearStr + "/" + monthStr + "/" + dateStr; // - */*/*
-			trasParMapLst = parquetService.executeQueryReturnEntityWithPath("TRANSACTIONS",
+			trasParMapLst = parquetService.executeQueryReturnEntityWithPath(RuleWhizConstants.TRANSACTIONS,
 					TransactionParquetMppaing.class, srchDto, parqutePath);
 
 		} catch (Exception e) {
@@ -81,6 +85,12 @@ public class TransactionServiceForParqute {
 		return trasParMapLst;
 	}
 	
+	/**
+	 * 
+	 * @param days
+	 * @param transID
+	 * @return
+	 */
 	public List<TransactionParquetMppaing> getTransDetailsFromParquteFromTrnsid(Integer days, String transID) {
 		List<TransactionParquetMppaing> trasParMapLst = null;
 		String todayStr = null;
@@ -93,12 +103,12 @@ public class TransactionServiceForParqute {
 			todayStr = dateformatUtils.chageDateFormatLocalDate(dateformat, currentDateTdy); // yyyy-MM-dd
 			startDateStr = dateformatUtils.chageDateFormatLocalDate(dateformat, stDate);
 			SearchFieldsDTO srchDto = new SearchFieldsDTO(null, null, startDateStr, todayStr, transID, null, null, null,
-					null, null, null, null, null,null,null,null,null);	
+					null, null, null, null, null,null,null,null,null,null);	
 			String yearStr  = String.valueOf(stDate.getYear());
 			String monthStr = String.format("%02d", stDate.getMonthValue());
 			String dateStr  = String.format("%02d", stDate.getDayOfMonth());
 			String parqutePath = yearStr + "/" + monthStr + "/" + dateStr; // - */*/*
-			trasParMapLst = parquetService.executeQueryReturnEntityWithPath("TRANSACTIONS",
+			trasParMapLst = parquetService.executeQueryReturnEntityWithPath(RuleWhizConstants.TRANSACTIONS,
 					TransactionParquetMppaing.class, srchDto, parqutePath);
 
 		} catch (Exception e) {
@@ -116,7 +126,7 @@ public class TransactionServiceForParqute {
 		TransactionCustomFieldRDTO  transCustFldRdtoObj = null;
 		String dateformat = null;
 		try {
-			transCustFldRdtoObj = parquetService.getConfig("TRANSACTIONS");
+			transCustFldRdtoObj = parquetService.getConfig(RuleWhizConstants.TRANSACTIONS);
 			if (transCustFldRdtoObj != null) {
 				List<ColumnMapping> lstCl = transCustFldRdtoObj.columnMappLstObj();
 				if (lstCl != null && lstCl.size() > 0) {
@@ -224,11 +234,46 @@ public class TransactionServiceForParqute {
 				} else {
 					
 				}
+				
+				Map<String, String> conditionLst =  new HashMap<>();
+				if (StringUtils.isNotBlank(transSrvVoObj.getConditionName())) {
+					switch (transSrvVoObj.getConditionName()) {
+					case AMLConstants.IMMEDIATE_DIFFERENT_LOCATIONS:
+						LOGGER.debug("REQID : [{}] - Transaction Date : [{}] - Deposite amt : [{}]", reqId, transSrvVoObj.getTransactionDate(), transSrvVoObj.getAmount());
+						conditionLst.put("amount","LESSTHANOREQUAL");
+						conditionLst.put("transactiondate","GREATERTHANOREQUAL");
+						break;
+					case AMLConstants.IMMEDIATE_WITHDRAWAL:
+						LOGGER.debug("REQID : [{}] - Transaction Date : [{}] - Deposite amt : [{}]", reqId, transSrvVoObj.getTransactionDate(), transSrvVoObj.getAmount());
+						conditionLst.put("amount","LESSTHANOREQUAL");
+						conditionLst.put("transactiondate","GREATERTHANOREQUAL");
+						break;
+					case AMLConstants.IMMEDIATE_WITHDRAWAL_ATM_OR_OTHER:
+						LOGGER.debug("REQID : [{}] - Transaction Date : [{}] - Deposite amt : [{}]", reqId, transSrvVoObj.getTransactionDate(), transSrvVoObj.getAmount());
+						conditionLst.put("amount","LESSTHANOREQUAL");
+						conditionLst.put("transactiondate","GREATERTHANOREQUAL");
+						break;
+					default:
+						LOGGER.info("REQ ID : [{}] - toGetValueByImediateWithDraw default block Condition not match");
+					}
+				} else {
+					conditionLst = null;
+					//conditionLst.put("amount","LESSTHANOREQUAL");
+					//conditionLst.put("transactionDate","GREATERTHANOREQUAL");
+				}
+				
+				
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, null, transDate,inclauuseForeignCntry,null,null,null,othercurrencycode);
-				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,inclauuseForeignCntry,null,null,null,othercurrencycode, transSrvVoObj.getDynamicConditions());
+				trasParMapLst = parquetService.executeQueryReturnEntity(RuleWhizConstants.TRANSACTIONS, TransactionParquetMppaing.class, srchDto,null);
+				if(trasParMapLst!=null) {
+					LOGGER.info("Transaction Parquet - trasParMapLst [IF] SIze : {}", trasParMapLst.size());
+				} else {
+					LOGGER.info("Transaction Parquet - trasParMapLst [ELSE]: {}", trasParMapLst);
+				}
+				
 			} else {
 				
 			}
@@ -288,21 +333,33 @@ public class TransactionServiceForParqute {
 		}
 		return computedFactsVO;
 	}
-	
+	/**
+	 * 
+	 * @param transSrvVoObj
+	 * @param reqId
+	 * @param amountOnly
+	 * @return
+	 */
 	public TransactionDetailsDTO getTransactionDetails(TransactionServiceSrchFieldVo transSrvVoObj, String reqId, boolean amountOnly) {
 		List<TransactionParquetMppaing> transParMapLst = null;
 		TransactionDetailsDTO transDtlObj = null;
+		Set<String> uniqueCounterAccNo = null;
 		try {
 			transDtlObj = new TransactionDetailsDTO();
 			transParMapLst = processTrasn(transSrvVoObj, reqId);
 			if (transParMapLst != null && transParMapLst.size() > 0) {
+				LOGGER.info("REQ ID : [{}] - getTransactionDetails Method transParMapLst [IF] : [{}]", reqId, transParMapLst);
+				
 				transDtlObj.setCountAmount((long) transParMapLst.size());
 				
 				BigDecimal total = BigDecimal.ZERO;
 				BigDecimal sumAmt = BigDecimal.ZERO;
+				uniqueCounterAccNo = new HashSet<>();
 				for (TransactionParquetMppaing transParquMapp : transParMapLst) {
+					uniqueCounterAccNo.add(transParquMapp.getCounterpartyaccountno());
 					if (StringUtils.isNotBlank(transParquMapp.getAmount()) && amountOnly) {
 						String amtStr = transParquMapp.getAmount();
+						LOGGER.trace("amtStr IF - : [{}]",amtStr);
 						if (isValidDecimal(amtStr)) {
 							total = new BigDecimal(amtStr.trim());
 							sumAmt.add(total);
@@ -311,21 +368,35 @@ public class TransactionServiceForParqute {
 						}
 					} else if (StringUtils.isNotBlank(transParquMapp.getAmount())){
 						String amtStr = transParquMapp.getAmount();
+						LOGGER.trace("amtStr ELSE - : [{}]",isValidDecimal(amtStr));
 						if (isValidDecimal(amtStr)) {
 							total = new BigDecimal(amtStr.trim());
-							sumAmt.add(total);	
+							sumAmt = sumAmt.add(total);
 						}
 					}
 				}
+				if (uniqueCounterAccNo != null && uniqueCounterAccNo.size() > 0) {
+					transDtlObj.setCOuntDistcounterpartyAccountNo((long) uniqueCounterAccNo.size());
+				} else {
+					transDtlObj.setCOuntDistcounterpartyAccountNo((long) 0);
+				}
 				transDtlObj.setSumAmount(sumAmt);
+			} else {
+				LOGGER.info("REQ ID : [{}] - getTransactionDetails Method transParMapLst [ELSE] : [{}]", reqId, transParMapLst);
+				
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception found in TransactionServiceForParqute@processOfReq : {}",e);
 		} finally {}
 		return transDtlObj;
-		
 	}
 	
+	/**
+	 * 
+	 * @param transSrvVoObj
+	 * @param reqId
+	 * @return
+	 */
 	public List<TransactionDetailsDTO> getTransactionDetailsLst(TransactionServiceSrchFieldVo transSrvVoObj, String reqId) {
 		List<TransactionParquetMppaing> transParMapLst = null;
 		TransactionDetailsDTO transDtlObj = null;
@@ -344,7 +415,7 @@ public class TransactionServiceForParqute {
 						String amtStr = transParquMapp.getAmount();
 						if (isValidDecimal(amtStr)) {
 							total = new BigDecimal(amtStr.trim());
-							sumAmt.add(total);	
+							sumAmt = sumAmt.add(total);
 						}
 					}
 					transDtlObj.setSumAmount(sumAmt);
@@ -371,7 +442,7 @@ public class TransactionServiceForParqute {
 		PercentageDetailsVO  percDtlObj = null;
 		try {
 			if(transSrvVoObj!=null) {
-				transCustFldRdtoObj = parquetService.getConfig("TRANSACTIONS");
+				transCustFldRdtoObj = parquetService.getConfig(RuleWhizConstants.TRANSACTIONS);
 				String dateformat = null;
 				if (transCustFldRdtoObj != null) {
 					List<ColumnMapping> lstCl = transCustFldRdtoObj.columnMappLstObj();
@@ -492,8 +563,9 @@ public class TransactionServiceForParqute {
 				// customerId,  accountNo,  startDate, endDate, transId,   amount, withdraDeposit, String transtype, transmode,  srchStr 
 				SearchFieldsDTO srchDto = new SearchFieldsDTO(transSrvVoObj.getCustId(), transSrvVoObj.getAccNo(),
 						startDateStr, todayStr, transSrvVoObj.getTxnNo(), minAmt, maxAmout,
-						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,inclauuseForeignCntry,null,null,null,othercurrencycode); // amount>Givenammount and Date >=
-				trasParMapLst = parquetService.executeQueryReturnEntity("TRANSACTIONS", TransactionParquetMppaing.class, srchDto,null);
+						transSrvVoObj.getWithdarwDeposit(), transSrvVoObj.getTransType(), inClause, conditionLst, transDate,
+						inclauuseForeignCntry,null,null,null,othercurrencycode,null); // amount>Givenammount and Date >=
+				trasParMapLst = parquetService.executeQueryReturnEntity(RuleWhizConstants.TRANSACTIONS, TransactionParquetMppaing.class, srchDto,null);
 			
 				if (trasParMapLst != null && trasParMapLst.size() > 0) {
 					percDtlObj = new PercentageDetailsVO();
@@ -509,7 +581,6 @@ public class TransactionServiceForParqute {
 							}
 						}
 					}
-
 					percDtlObj.setTotalValue(total);
 					LOGGER.info("REQID : [{}] - retnVal : [{}]", reqId, percDtlObj);
 				} else {
@@ -598,7 +669,7 @@ public class TransactionServiceForParqute {
 					
 					}
 					SerarchFieldsSimpleRuleDTO srchRlObj = new SerarchFieldsSimpleRuleDTO(custId, accNo, null,null, txnId,conditions, params, joinExpression);
-					transactionParMappinLst = parquetService.executeQueryWithSimpleRule("TRANSACTIONS",TransactionParquetMppaing.class,srchRlObj,null);
+					transactionParMappinLst = parquetService.executeQueryWithSimpleRule(RuleWhizConstants.TRANSACTIONS,TransactionParquetMppaing.class,srchRlObj,null);
 					
 					if (transactionParMappinLst != null && transactionParMappinLst.size() > 0) {
 						
@@ -614,14 +685,13 @@ public class TransactionServiceForParqute {
 								String amtStr = transParquMapp.getAmount();
 								if (isValidDecimal(amtStr)) {
 									total = new BigDecimal(amtStr.trim());
-									sumAmt.add(total);
+									sumAmt = sumAmt.add(total);
 								}
 							}
 							transDtlObj.setSumAmount(sumAmt);
 							transDtlDTOObj.add(transDtlObj);
 						}
 					}
-					
 				} else {
 					transactionParMappinLst = null;
 				}
@@ -633,14 +703,13 @@ public class TransactionServiceForParqute {
 		return transDtlDTOObj;
 	}
 	
-	
-	
 	/**
 	 * 
 	 * @param s
 	 * @return
 	 */
 	private boolean isValidDecimal(String s) {
-	    return s != null && s.matches("\\d+(\\.\\d+)?");
+	    return s != null &&
+	           s.matches("^(?:\\d+\\.?\\d*|\\.\\d+)$");
 	}
 }

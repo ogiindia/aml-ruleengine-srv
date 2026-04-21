@@ -23,6 +23,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("COUNTRY_RISKService")
 public class CountryRIskFact implements FactInterface {
@@ -91,7 +92,7 @@ public class CountryRIskFact implements FactInterface {
 			transSrvSrchFilevoObj.setTxnNo(txnId);
 			transSrvSrchFilevoObj.setForeignCountryCode(false);
 
-			computedFactsVOObj.setStrType("str");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 			if (condition != null) {
 				// dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId,
 				// transType);

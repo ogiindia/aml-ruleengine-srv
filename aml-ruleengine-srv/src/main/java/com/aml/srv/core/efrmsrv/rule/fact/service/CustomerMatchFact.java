@@ -26,6 +26,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("CUSTOMER_MATCHService")
@@ -88,7 +89,7 @@ public class CustomerMatchFact implements FactInterface {
 			if (condition != null) {
 				CustomerDetailsParquetEntity custDetails = customerServiceForParqute.getCustParqueEntity(custId, accNo);
 				if (condition.equals("UNSCR")) {
-					computedFactsVOObj.setStrType("str");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(reqId, custId);
 					if (custDetails != null && StringUtils.isNotBlank(custDetails.getCustomername()) && StringUtils.isNotBlank(custDetails.getCountry())) {
 						custName = custDetails.getCustomername();
@@ -108,7 +109,7 @@ public class CustomerMatchFact implements FactInterface {
 					}
 
 				} else if (condition.equals("UNSCR")) {
-					computedFactsVOObj.setStrType("str");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(reqId, custId);
 					if (custDetails != null && StringUtils.isNotBlank(custDetails.getCustomername()) && StringUtils.isNotBlank(custDetails.getCountry())) {
 
@@ -130,7 +131,7 @@ public class CustomerMatchFact implements FactInterface {
 					}
 
 				} else if (condition.equals("CRIMINAL_LIST")) {
-					computedFactsVOObj.setStrType("str");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(reqId, custId);
 					if (custDetails != null && StringUtils.isNotBlank(custDetails.getCustomername()) && StringUtils.isNotBlank(custDetails.getCountry())) {
 
@@ -151,7 +152,7 @@ public class CustomerMatchFact implements FactInterface {
 					}
 
 				} else if (condition.equals("TF_SUSPECT")) {
-					computedFactsVOObj.setStrType("str");
+					computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_STR);
 					//CustomerDetailsEntity custDetails = customerDetailsService.getCustomerDetails(reqId, custId);
 					if (custDetails != null && StringUtils.isNotBlank(custDetails.getCustomername()) && StringUtils.isNotBlank(custDetails.getCountry())) {
 						custName = custDetails.getCustomername();

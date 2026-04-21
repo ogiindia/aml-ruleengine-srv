@@ -21,6 +21,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("MULTIPLE_DEPOSIT_LOCATIONSService")
 public class ImmediateDepositLocationFact implements FactInterface {
@@ -84,7 +85,7 @@ public class ImmediateDepositLocationFact implements FactInterface {
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId, AMLConstants.CR,days,months,hours);
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCountAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));

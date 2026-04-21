@@ -18,6 +18,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("SUM_INWARD_FOREIGN_REMITTANCESService")
@@ -76,7 +77,7 @@ public class SumInwardForeignRemittanceFact implements FactInterface{
 			//TransactionDetailsDTO dto = null;
 			//dto = transactionService.getTransactionDetails(reqId, custId);
 			dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,false);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (condition != null) {
 				if (condition.equals("NON_ACCOUNT_HOLDER")) {
 					nonCustomerRepositry.getNonCustomerDetails(custId);

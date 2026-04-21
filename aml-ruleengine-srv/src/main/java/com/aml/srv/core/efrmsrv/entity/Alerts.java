@@ -8,16 +8,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "FS_Alerts")
 public class Alerts {
-
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
-	private Integer id;
+	private Long id;
+	
+	@Version
+	@Column(name ="VERSION")
+	private Integer version;
 	
 	@Column(name = "ALERT_ID")
 	private String alertId;
@@ -82,11 +86,11 @@ public class Alerts {
 	@Column(name = "Tran_RISK_TYPE")
 	private String tranRiskType;
 	
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

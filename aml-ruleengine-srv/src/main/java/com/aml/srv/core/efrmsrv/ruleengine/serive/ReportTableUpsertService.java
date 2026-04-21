@@ -1,7 +1,5 @@
 package com.aml.srv.core.efrmsrv.ruleengine.serive;
 
-
-
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -9,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,24 +47,30 @@ public class ReportTableUpsertService {
 	@Autowired
 	FS_FIU_CFTR_Repository<?> fs_fiu_CFTR_Repository;
 	
+	@Retryable(
+	        retryFor = { ObjectOptimisticLockingFailureException.class },
+	        maxAttempts = 3,
+	        backoff = @Backoff(delay = 100)
+	    )
+	
 	@Transactional
 	public void toUpdateInsertReportTbl(TransactionParquetMppaing transactionEntity, String alertCategory,
-			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc) {
+			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc, String ruleId) {
 		// TODO Auto-generated method stub
 		if (StringUtils.isNotBlank(alertCategory)) {
 			switch (alertCategory) {
 			case RuleWhizConstants.NGO:
 			case RuleWhizConstants.NTR:
-				ntrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj);
+				ntrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj,ruleId);
 				break;
 			case RuleWhizConstants.CTR:
-				ctrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc);
+				ctrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc,ruleId);
 				break;
 			case RuleWhizConstants.CFTR:
-				cftrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc);
+				cftrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc,ruleId);
 				break;
 			case RuleWhizConstants.CBWTR:
-				cbwtrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc);
+				cbwtrUpsert(transactionEntity, alertCategory, alertName,transAccCustDtlObj, alertDesc,ruleId);
 				break;
 			default:
 				break;
@@ -72,12 +79,11 @@ public class ReportTableUpsertService {
 	}
 
 	public void cbwtrUpsert(TransactionParquetMppaing transactionEntity, String alertCategory,
-			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc) {
+			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc, String ruleId) {
 		FS_FIU_CBWTREntity cbwtrEntityObj = null;
 		try {
-			cbwtrEntityObj = fs_fiu_CBWTR_Repository.findByTransactionIdAndReportType(transactionEntity.getTransactionid(), alertCategory)
+			cbwtrEntityObj = fs_fiu_CBWTR_Repository.findByTransactionIdAndReportTypeAndRuleId(transactionEntity.getTransactionid(), alertCategory, ruleId)
 		            .orElse(new FS_FIU_CBWTREntity());
-			
 			cbwtrEntityObj.setCreatedDate(new Timestamp(new Date().getTime()));
 			cbwtrEntityObj.setCurrency(transactionEntity.getCurrencycode());
 			cbwtrEntityObj.setCustomerId(transAccCustDtlObj.getCustId());
@@ -90,21 +96,21 @@ public class ReportTableUpsertService {
 			cbwtrEntityObj.setTransactionDate(transactionEntity.getTransactiondate());
 			cbwtrEntityObj.setTrasnactionAmount(transactionEntity.getAmount());
 			cbwtrEntityObj.setTransactionId(transactionEntity.getTransactionid());
-			
+			cbwtrEntityObj.setRuleId(ruleId);
 			fs_fiu_CBWTR_Repository.save(cbwtrEntityObj);
+		} catch (ObjectOptimisticLockingFailureException ex) {
+			LOGGER.warn("Optimistic lock conflict in ctrUpsert for txId={}, category={}", transactionEntity.getTransactionid(), alertCategory);
+		    throw ex; // let @Retryable see it
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ReportTableUpsertService@cbwtrUpsert : {}", e);
-		} finally {
-			cbwtrEntityObj = null;
-		}
-
+		} finally { cbwtrEntityObj = null; }
 	}
 
 	public void cftrUpsert(TransactionParquetMppaing transactionEntity, String alertCategory,
-			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc) {
+			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc,String ruleId) {
 		FS_FIU_CFTREntity fsFiuCftrEntityObj =  null;
 		try {
-			fsFiuCftrEntityObj = fs_fiu_CFTR_Repository.findByTransactionIdAndReportType(transactionEntity.getTransactionid(), alertCategory)
+			fsFiuCftrEntityObj = fs_fiu_CFTR_Repository.findByTransactionIdAndReportTypeAndRuleId(transactionEntity.getTransactionid(), alertCategory, ruleId)
 					.orElse(new FS_FIU_CFTREntity());
 			fsFiuCftrEntityObj.setBranchCode(transAccCustDtlObj.getBranchCode());
 			fsFiuCftrEntityObj.setCreatedDate(new Timestamp(new Date().getTime()));
@@ -115,20 +121,22 @@ public class ReportTableUpsertService {
 			fsFiuCftrEntityObj.setPan(transAccCustDtlObj.getPanNo());
 			fsFiuCftrEntityObj.setParnetId(transAccCustDtlObj.getCustId() + transactionEntity.getTransactionid());
 			fsFiuCftrEntityObj.setRemarks(alertDesc);
-			
+			fsFiuCftrEntityObj.setRuleId(ruleId);
 			fs_fiu_CFTR_Repository.save(fsFiuCftrEntityObj);
+		} catch (ObjectOptimisticLockingFailureException ex) {
+			LOGGER.warn("Optimistic lock conflict in ctrUpsert for txId={}, category={}", transactionEntity.getTransactionid(), alertCategory);
+		    throw ex; // let @Retryable see it
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ReportTableUpsertService@cftrUpsert : {}", e);
-		} finally {fsFiuCftrEntityObj =  null;
-		}
+		} finally {fsFiuCftrEntityObj =  null;}
 
 	}
 
 	public void ctrUpsert(TransactionParquetMppaing transactionEntity, String alertCategory,
-			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc) {
+			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj, String alertDesc,String ruleId) {
 		FS_FIU_CTREntity ctrEntityObj = null;
 		try {
-			ctrEntityObj = fs_fiu_CTR_Repository.findByTransactionIdAndReportType(transactionEntity.getTransactionid(), alertCategory)
+			ctrEntityObj = fs_fiu_CTR_Repository.findByTransactionIdAndReportTypeAndRuleId(transactionEntity.getTransactionid(), alertCategory, ruleId)
 		            .orElse(new FS_FIU_CTREntity());
 			ctrEntityObj.setTransactionId(transactionEntity.getTransactionid());
 			ctrEntityObj.setReportType(alertCategory);
@@ -145,23 +153,23 @@ public class ReportTableUpsertService {
 			ctrEntityObj.setTransType(transactionEntity.getTransactiontype());
 			ctrEntityObj.setRemarks(alertDesc);
 			ctrEntityObj.setParnetId(transAccCustDtlObj.getCustId() + transactionEntity.getTransactionid());
-			
+			ctrEntityObj.setRuleId(ruleId);
 			fs_fiu_CTR_Repository.save(ctrEntityObj);
 			
+		} catch (ObjectOptimisticLockingFailureException ex) {
+			LOGGER.warn("Optimistic lock conflict in ctrUpsert for txId={}, category={}", transactionEntity.getTransactionid(), alertCategory);
+		    throw ex; // let @Retryable see it
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ReportTableUpsertService@ctrUpsert : {}", e);
-		} finally {
-			ctrEntityObj = null;
-		}
-
+		} finally { ctrEntityObj = null; }
 	}
 
-	@Transactional
+	
 	public void ntrUpsert(TransactionParquetMppaing transactionEntity, String alertCategory,
-			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj) {
+			String alertName, TransactionAccountCustDetailsDAO transAccCustDtlObj,String ruleId) {
 		FS_FIU_NTREntity ntrEntityObj =  null;
 		try {
-			ntrEntityObj = fs_fiu_NTR_Repository.findByTransactionIdAndReportType(transactionEntity.getTransactionid(), alertCategory)
+			ntrEntityObj = fs_fiu_NTR_Repository.findByTransactionIdAndReportTypeAndRuleId(transactionEntity.getTransactionid(), alertCategory,ruleId)
             .orElse(new FS_FIU_NTREntity());
 			ntrEntityObj.setTransactionId(transactionEntity.getTransactionid());
 			ntrEntityObj.setReportType(alertCategory);
@@ -175,13 +183,13 @@ public class ReportTableUpsertService {
 			ntrEntityObj.setCurrency(transactionEntity.getCurrencycode());
 			ntrEntityObj.setPurposeOfFund(alertName);
 			ntrEntityObj.setParnetId(transAccCustDtlObj.getCustId() + transactionEntity.getTransactionid());
-			
+			ntrEntityObj.setRuleId(ruleId);
 			fs_fiu_NTR_Repository.save(ntrEntityObj);
+		} catch (ObjectOptimisticLockingFailureException ex) {
+			LOGGER.warn("Optimistic lock conflict in ctrUpsert for txId={}, category={}", transactionEntity.getTransactionid(), alertCategory);
+		    throw ex; // let @Retryable see it
 		} catch (Exception e) {
 			LOGGER.error("Exception found in ReportTableUpsertService@processOfReq : {}", e);
-		} finally {ntrEntityObj =  null;
-		}
-
+		} finally {ntrEntityObj = null;}
 	}
-
 }

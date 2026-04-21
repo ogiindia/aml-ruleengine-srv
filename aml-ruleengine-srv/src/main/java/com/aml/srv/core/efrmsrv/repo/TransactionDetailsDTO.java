@@ -27,6 +27,8 @@ public class TransactionDetailsDTO {
 	private String counterLocation = null;
 
 	public Long counterAccountNo = null;
+	
+	public Long countDistAccountNo;
 
 	public BigDecimal getSumAmount() {
 		return sumAmount;
@@ -124,4 +126,11 @@ public class TransactionDetailsDTO {
 		this.counterAccountNo = counterAccountNo;
 	}
 
+	public Long getCountDistAccountNo() {
+		return countDistAccountNo;
+	}
+
+	public void setCountDistAccountNo(Long countDistAccountNo) {
+		this.countDistAccountNo = countDistAccountNo;
+	}
 }

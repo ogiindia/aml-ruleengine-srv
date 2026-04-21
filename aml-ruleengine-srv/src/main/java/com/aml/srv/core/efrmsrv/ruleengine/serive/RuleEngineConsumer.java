@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 public class RuleEngineConsumer {
 
 	private Logger LOGGER = LoggerFactory.getLogger(RuleEngineConsumer.class);
+	
+	private static final Gson GSON = new Gson();
 
 	@Autowired
 	TxnDetailsImpl txnDetailsImpl;
@@ -57,23 +59,20 @@ public class RuleEngineConsumer {
 		try {
 			if (StringUtils.isNotBlank(msg)) {
 				LOGGER.info("Received Message [IF]: {}", msg);
-				finSecIndicatorVOObj = new Gson().fromJson(msg, FinSecIndicatorVO.class);
+				finSecIndicatorVOObj = GSON.fromJson(msg, FinSecIndicatorVO.class);
 				if (finSecIndicatorVOObj != null) {
 					LOGGER.info("FinSecIndicatorVO conversion [IF]: {}", finSecIndicatorVOObj);
 					if (finSecIndicatorVOObj.isFileCompletedStatus()) {
 						/**Get from Parqute**/
-						
 						List<TransactionParquetMppaing> tansParquMappLst = 	transactionServiceForParqute.getTransDetailsFromProperty(minusDays);
-						if(tansParquMappLst!=null) {
-							for(TransactionParquetMppaing trasnDataEntity :tansParquMappLst) {
-								LOGGER.debug("AMLRuleEngineConsumer - Transaction Batch ID  : [{}]", trasnDataEntity.getTransactionid());
+						if(tansParquMappLst!=null && !tansParquMappLst.isEmpty()) {
+							for(TransactionParquetMppaing trasnDataEntity : tansParquMappLst) {
+								LOGGER.debug("AMLRuleEngineConsumer - Transaction ID  : [{}]", trasnDataEntity.getTransactionid());
 								//Record Publish kafka for Rule ENgine Dynamic Listener(Dynamic Listener In RuleExecutorService.java same Project)
-								ProducerRecord<String, String> record = new ProducerRecord<String, String>(
-										RuleWhizConstants.KAFKA_PUB_TOPIC_DYNAMIC, null,
-										trasnDataEntity.getTransactionid(), new Gson().toJson(trasnDataEntity));
+								ProducerRecord<String, String> record = new ProducerRecord<String, String>(RuleWhizConstants.KAFKA_PUB_TOPIC_DYNAMIC, null, trasnDataEntity.getTransactionid(), new Gson().toJson(trasnDataEntity));
 
 								template.send(record); // Published successfully
-
+								//template.send(RuleWhizConstants.KAFKA_PUB_TOPIC_DYNAMIC,  trasnDataEntity.getTransactionid(), new Gson().toJson(trasnDataEntity));
 								// Record publish kafak for Sanction List Check (Listener In RT Engine Project)
 								ProducerRecord<String, String> recordForSanctionList = new ProducerRecord<String, String>(
 										RuleWhizConstants.KAFKA_PUB_TOPIC_SANCTIONLIST, null,
@@ -105,8 +104,7 @@ public class RuleEngineConsumer {
 						}
 						*/
 					} else {
-						LOGGER.info("AMLRuleEngineConsumer isFileCompletedStatus [ELSE]: {}",
-								finSecIndicatorVOObj.isFileCompletedStatus());
+						LOGGER.info("AMLRuleEngineConsumer isFileCompletedStatus [ELSE]: {}", finSecIndicatorVOObj.isFileCompletedStatus());
 					}
 				} else {
 					LOGGER.info("AMLRuleEngineConsumer conversion [ELSE]: {}", finSecIndicatorVOObj);

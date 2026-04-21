@@ -16,6 +16,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("ATM_WITHDRAWAL_LOCATIONService")
 public class ATMWithdrawLocationFact implements FactInterface {
@@ -53,7 +54,7 @@ public class ATMWithdrawLocationFact implements FactInterface {
 			//TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,AMLConstants.WITHDRAW, transMode, days, months, factSetObj, range);
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId,null,days,months,hours);
 			TransactionDetailsDTO dto = summarizationDataImpl.getTransSummarization(sumLstObj);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getCountAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));

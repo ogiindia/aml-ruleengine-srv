@@ -17,6 +17,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 @Service("TRANSACTION_AMOUNTService")
 public class TransactionAmountFact implements FactInterface {
@@ -51,7 +52,7 @@ public class TransactionAmountFact implements FactInterface {
 			Range range = factSetObj.getRange();
 			String condition = factSetObj.getCondition();
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			computedFactsVOObj.setFact(factName);
 			
 			transSrvSrchFilevoObj = new TransactionServiceSrchFieldVo();

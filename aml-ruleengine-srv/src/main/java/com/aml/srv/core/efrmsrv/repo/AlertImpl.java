@@ -35,7 +35,7 @@ public class AlertImpl {
 		AlretIntDTO alrtDtoObj = null;
 		AtomicReference<AlretIntDTO> ref =null;
 		try {
-			 ref = new AtomicReference<>();
+			ref = new AtomicReference<>();
 			alrtsObj = new Alerts();
 			alrtsObj.setAlertParentId(alertParentIdParam);
 			exAlertObj = Example.of(alrtsObj);

@@ -8,17 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aml.srv.core.efrm.parquet.service.TransactionServiceForParqute;
-import com.aml.srv.core.efrm.parquet.service.TransactionServiceSrchFieldVo;
 import com.aml.srv.core.efrmsrv.entity.SummarizationDataEntity;
 import com.aml.srv.core.efrmsrv.repo.SummarizationDataImpl;
 import com.aml.srv.core.efrmsrv.repo.TransactionDetailsDTO;
-import com.aml.srv.core.efrmsrv.repo.TransactionService;
 import com.aml.srv.core.efrmsrv.rule.intr.FactInterface;
 import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("AVG_DEBIT_CREDITService")
@@ -59,11 +57,10 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 
 			/*TransactionDetailsDTO dto = transactionService.getTransactionDetails(reqId, custId, accNo, txnId, null,
 					transMode, days, months, factSetObj, range,hours);*/
-
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId, null,days,months,hours);
 			dto = summarizationDataImpl.getTransSummarization(sumLstObj);
 		
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getAvgAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));

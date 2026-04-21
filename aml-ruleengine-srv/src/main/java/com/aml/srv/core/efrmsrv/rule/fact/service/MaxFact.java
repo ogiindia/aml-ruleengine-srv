@@ -23,6 +23,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.rule.service.RulesIdentifierService;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("MAXService")
@@ -76,8 +77,8 @@ public class MaxFact implements FactInterface{
 					/*AccountStatusEntity acctStatus = accountDetailsService.getAccountStatusByAccNO(accNo,
 							requVoObjParam.getReqId());*/
 					AccountDetailsParquetEntity acctStatus = null;
-					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
-					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity("ACCOUNTS", AccountDetailsParquetEntity.class, srchDto,null);
+					SearchFieldsDTO srchDto =  new SearchFieldsDTO(custId, accNo, null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null);
+					List<AccountDetailsParquetEntity> lstAc = parquetService.executeQueryReturnEntity(RuleWhizConstants.ACCOUNTS, AccountDetailsParquetEntity.class, srchDto,null);
 					if (lstAc != null && lstAc.size() > 0) {
 						acctStatus = lstAc.get(0);
 					}
@@ -102,7 +103,7 @@ public class MaxFact implements FactInterface{
 						transSrvSrchFilevoObj.setTransType(transType);
 						transSrvSrchFilevoObj.setTxnNo(txnId);
 						dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
-						computedFactsVOObj.setStrType("num");
+						computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 						if (dto != null && dto.getCountAmount() != null) {
 							computedFactsVOObj.setFact(factName);
 							computedFactsVOObj.setValue(new BigDecimal(dto.getCountAmount()));
@@ -133,7 +134,7 @@ public class MaxFact implements FactInterface{
 				transSrvSrchFilevoObj.setTxnNo(txnId);
 				dto = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
 				
-				computedFactsVOObj.setStrType("num");
+				computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 				if (dto != null && dto.getCountAmount() != null) {
 
 					computedFactsVOObj.setFact(factName);

@@ -21,7 +21,7 @@ private Logger LOGGER = LoggerFactory.getLogger(BranchServiceForParquet.class);
 		BankandBranchDetailsParquetEntity bankAndBrachDtlparquetObj = null;
 		SearchFieldsDTO srchDto = null;
 		try {
-			srchDto =  new SearchFieldsDTO(null, null, null,null,null,null,null,null,null,null,null,null,null, branchCode, bankCode,null,null);
+			srchDto =  new SearchFieldsDTO(null, null, null,null,null,null,null,null,null,null,null,null,null, branchCode, bankCode,null,null,null);
 			List<BankandBranchDetailsParquetEntity> lstcustObj = parquetService.executeQueryReturnEntity("BRANCH", BankandBranchDetailsParquetEntity.class, srchDto, null);
 			if (lstcustObj != null && lstcustObj.size() > 0) {
 				bankAndBrachDtlparquetObj = lstcustObj.get(0);
@@ -38,7 +38,7 @@ private Logger LOGGER = LoggerFactory.getLogger(BranchServiceForParquet.class);
 		List<BankandBranchDetailsParquetEntity> lstcustObj = null;
 		SearchFieldsDTO srchDto = null;
 		try {
-			srchDto =  new SearchFieldsDTO(null, null, null,null,null,null,null,null,null,null,null,null,null, branchCode, bankCode,null,null);
+			srchDto =  new SearchFieldsDTO(null, null, null,null,null,null,null,null,null,null,null,null,null, branchCode, bankCode,null,null,null);
 			 lstcustObj = parquetService.executeQueryReturnEntity("BRANCH", BankandBranchDetailsParquetEntity.class, srchDto, null);
 			
 		} catch (Exception e) {

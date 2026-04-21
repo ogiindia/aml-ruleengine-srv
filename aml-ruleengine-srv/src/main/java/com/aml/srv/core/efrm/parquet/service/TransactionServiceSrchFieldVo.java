@@ -27,6 +27,7 @@ public class TransactionServiceSrchFieldVo implements Serializable {
 	private boolean foreignCountryCode;
 	private boolean currencycode;
 	private boolean othercurrencycode;
+	private String dynamicConditions;
 
 	public String getAccNo() {
 		return accNo;
@@ -163,4 +164,14 @@ public class TransactionServiceSrchFieldVo implements Serializable {
 	public void setOthercurrencycode(boolean othercurrencycode) {
 		this.othercurrencycode = othercurrencycode;
 	}
+
+	public String getDynamicConditions() {
+		return dynamicConditions;
+	}
+
+	public void setDynamicConditions(String dynamicConditions) {
+		this.dynamicConditions = dynamicConditions;
+	}
+	
+	
 }

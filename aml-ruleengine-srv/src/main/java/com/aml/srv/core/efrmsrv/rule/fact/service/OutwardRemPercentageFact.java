@@ -18,6 +18,7 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
 import com.aml.srv.core.efrmsrv.utils.AMLConstants;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
 
 @Service("OUTWARD_REM_PERCENTAGEService")
@@ -84,7 +85,7 @@ private Logger LOGGER = LoggerFactory.getLogger(SumDebitCreditFact.class);
 			transSrvSrchFilevoObj.setWithdarwDeposit(AMLConstants.DR); // only outward
 			TransactionDetailsDTO outwardRemitancetrsn  = transactionServiceForParqute.getTransactionDetails(transSrvSrchFilevoObj,reqId,true);
 			
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getSumAmount() != null 
 					&& outwardRemitancetrsn!=null && outwardRemitancetrsn.getSumAmount()!=null) {
 

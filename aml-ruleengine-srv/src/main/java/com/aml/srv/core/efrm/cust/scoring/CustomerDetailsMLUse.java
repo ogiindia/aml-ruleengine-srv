@@ -127,12 +127,11 @@ public class CustomerDetailsMLUse {
 		Optional<MapperSummarizationFiledDTO> mapperSummdtdo = null;
 		MapperSummarizationFiledDTO mappSUdto = null;
 		try {
-			LOGGER.info("Get TableColumn Details getTableColumnName : KY-[{}] and VL-[{}]", key, fieldName);
+			//LOGGER.info("Get TableColumn Details getTableColumnName : KY-[{}] and VL-[{}]", key, fieldName);
 			mapperSummdtdo = mapperImpl.getMapperBySourceName(key, fieldName);
 			if (!mapperSummdtdo.isEmpty() && mapperSummdtdo.isPresent()) {
 				mappSUdto = mapperSummdtdo.get();
-				LOGGER.debug("Table name : [{}] - Column Name : [{}]", mappSUdto.getTableName(),
-						mappSUdto.getColumnName());
+				//LOGGER.debug("Table name : [{}] - Column Name : [{}]", mappSUdto.getTableName(), mappSUdto.getColumnName());
 			} else {
 				mappSUdto = null;
 			}
@@ -200,7 +199,7 @@ public class CustomerDetailsMLUse {
 									// LOGGER.info("Table Name : {} and Column Name :" + col + " = " + value,
 									// mappsum.getTableName());
 									if (StringUtils.isNotBlank(col) && !maybeName.isEmpty()) {
-										LOGGER.debug("Column Name : [{}] and Column Value : {} ", col, maybeName.get());
+										//LOGGER.debug("Column Name : [{}] and Column Value : {} ", col, maybeName.get());
 										rtnVaalue = value;
 									} else { rtnVaalue = null; }
 								}

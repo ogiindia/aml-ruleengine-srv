@@ -64,7 +64,6 @@ public class ParquetService {
 		ResultSet rs = null;
 		ResultSetMetaData meta = null;
 		List<T> result = null;
-		
 		try {
 			result = new ArrayList<>();
 			con = getDuckDbConn();
@@ -85,20 +84,18 @@ public class ParquetService {
 			rs = stmt.executeQuery();
 
 			if (rs==null || !rs.next()) {
-			    LOGGER.warn("No data found");
+			    LOGGER.info(":::::::::::::::::::::::::No data found / No Row Found");
 			    return Collections.emptyList(); // never return null
 			}
 
 			meta = rs.getMetaData();
 			int cols = meta.getColumnCount();
-
 			do {
 			    T entity = type.getDeclaredConstructor().newInstance();
 			    for (int i = 1; i <= cols; i++) {
-
 			        String colName = meta.getColumnLabel(i);
 			        Object value = rs.getObject(i);
-
+			        LOGGER.trace("colName : [{}] - Value : [{}]",colName, value);
 			        String fieldName = toCamel(colName);
 			        try {
 			            Field f = type.getDeclaredField(fieldName);
@@ -107,7 +104,7 @@ public class ParquetService {
 			            f.set(entity, converted);
 
 			        } catch (NoSuchFieldException ignore) {
-			            LOGGER.debug("Field not found: {}", fieldName);
+			            LOGGER.error("Field not found: {}", fieldName);
 			        }
 			    }
 
@@ -124,7 +121,6 @@ public class ParquetService {
 				meta = null;
 			} catch (Exception ignore) {
 			}
-
 			LOGGER.info("::::::::::::::executeQueryReturnEntity Method End::::::::::::::::::");
 		}
 		return result;
@@ -247,7 +243,7 @@ public class ParquetService {
 			if (transMappLstObj != null && transMappLstObj.size() > 0) {
 				for (TransactionMapping tranMap : transMappLstObj) {
 					String json = new Gson().toJson(tranMap);
-					LOGGER.debug("----------->> {}", json);
+					LOGGER.trace("----------->> {}", json);
 					if (tranMap != null && StringUtils.isNotBlank(tranMap.getShortName())
 							&& StringUtils.isNotBlank(shortName)
 							&& shortName.equalsIgnoreCase(tranMap.getShortName())) {
@@ -426,8 +422,8 @@ public class ParquetService {
 								//WHERE strptime(TXDATE, '%d-%b-%Y')  BETWEEN strptime('27-Mar-2026', '%d-%b-%Y')  AND strptime('28-Mar-2026', '%d-%b-%Y');
 							if (StringUtils.isNotBlank(srcField.startDate()) && !srcField.startDate().equalsIgnoreCase("null")
 									&& StringUtils.isNotBlank(srcField.endDate()) && !srcField.endDate().equalsIgnoreCase("null")) {
-								criteria = criteria.replaceFirst("#Date#", "strptime('" + srcField.startDate() + "', '%d-%b-%Y')")
-										.replaceFirst("#Date#", "strptime('" + srcField.endDate() + "', '%d-%b-%Y')");
+								criteria = criteria.replaceFirst("#Date#", "strptime('" + srcField.startDate().toUpperCase() + "', '%d-%b-%Y')")
+										.replaceFirst("#Date#", "strptime('" + srcField.endDate().toUpperCase() + "', '%d-%b-%Y')");
 								
 								criteria = criteria.replaceFirst(col.getFrom(),"strptime("+col.getFrom()+", '%d-%b-%Y')");
 								
@@ -437,8 +433,10 @@ public class ParquetService {
 						case "amount":
 							if (StringUtils.isNotBlank(srcField.minamount()) && !srcField.minamount().equalsIgnoreCase("null")
 									&& StringUtils.isNotBlank(srcField.maxamount()) && !srcField.maxamount().equalsIgnoreCase("null")) {
-								criteria = criteria.replaceFirst("#amount#", "'" + srcField.minamount() + "'")
-										.replaceFirst("#amount#", "'" + srcField.maxamount() + "'");
+								/*criteria = criteria.replaceFirst("#amount#", srcField.minamount())
+										.replaceFirst("#amount#", srcField.maxamount());*/
+								criteria = "CAST(" + col.getFrom() + " AS DOUBLE) between " + srcField.minamount()
+										+ " and " + srcField.maxamount();
 								isValid = true;
 							}
 							break;
@@ -545,6 +543,7 @@ public class ParquetService {
 				   });
 			}
 			
+			
 			if(StringUtils.isNotBlank(qruRefAmt.get())) {
 				conditions.add(qruRefAmt.get());
 			}
@@ -553,10 +552,16 @@ public class ParquetService {
 				conditions.add(qruRefTdate.get());
 			}
 			
+			if(StringUtils.isNotBlank(srcField.customQuery())) {
+				conditions.add(srcField.customQuery());
+			}
+			
 			if (!conditions.isEmpty()) {
 				
 				condition = " WHERE " + String.join(" AND ", conditions);
 			}
+			
+			
 
 			String parquetPath = tofindParqutePat(config);
 

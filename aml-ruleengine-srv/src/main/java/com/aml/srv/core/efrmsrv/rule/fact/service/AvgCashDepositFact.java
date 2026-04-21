@@ -16,8 +16,11 @@ import com.aml.srv.core.efrmsrv.rule.process.request.Factset;
 import com.aml.srv.core.efrmsrv.rule.process.request.Range;
 import com.aml.srv.core.efrmsrv.rule.process.request.RuleRequestVo;
 import com.aml.srv.core.efrmsrv.rule.process.response.ComputedFactsVO;
+import com.aml.srv.core.efrmsrv.utils.RuleWhizConstants;
 
-
+/**
+ * Average Cash Deposits Service
+ */
 @Service("AVG_CASH_DEPOSITSService")
 public class AvgCashDepositFact implements FactInterface{
 
@@ -60,7 +63,7 @@ public class AvgCashDepositFact implements FactInterface{
 			
 			sumLstObj = summarizationDataImpl.getSummarizationData(reqId, accNo, custId, null,days,months,hours);
 			dto = summarizationDataImpl.getTransSummarization(sumLstObj);
-			computedFactsVOObj.setStrType("num");
+			computedFactsVOObj.setStrType(RuleWhizConstants.VALUE_NUM);
 			if (dto != null && dto.getAvgAmount() != null) {
 				computedFactsVOObj.setFact(factName);
 				computedFactsVOObj.setValue(new BigDecimal(dto.getAvgAmount()));
@@ -72,8 +75,7 @@ public class AvgCashDepositFact implements FactInterface{
 		} catch (Exception e) {
 			LOGGER.error("Exception found in AvgCashDepositFact@getFactExecutor : {}", e);
 		} finally {
-			LOGGER.info("REQID : [{}]::::::::::::AvgCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n",
-					requVoObjParam.getReqId());
+			LOGGER.info("REQID : [{}]::::::::::::AvgCashDepositFact@getFactExecutor (EXIT) End::::::::::\n\n", requVoObjParam.getReqId());
 		}
 		return computedFactsVOObj;
 	}
