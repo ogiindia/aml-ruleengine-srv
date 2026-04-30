@@ -74,7 +74,7 @@ public class RuleValidationController {
 		RuleResposeDetailsVO ruleResponseVoObj = null;
 		try {
 
-			ruleResponseVoObj = rulesIdentifierService.toComputeAMLData(requestObjParam);
+			ruleResponseVoObj = rulesIdentifierService.toComputeAMLData(requestObjParam,requestObjParam.getTxnId(),requestObjParam.getRuleId());
 			if (ruleResponseVoObj != null) {
 				retunRespEntity = getResponseEntity(new Gson().toJson(ruleResponseVoObj), HttpStatus.OK);
 			} else {
